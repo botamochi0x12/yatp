@@ -1,0 +1,17 @@
+
+# yaml-language-server: $schema=https://github.com/SchemaStore/schemastore/raw/master/src/schemas/json/eslintrc.json
+env:
+  node: true
+  es2021: true
+extends: standard-with-typescript
+overrides: []
+plugins:
+  - "@typescript-eslint"
+parserOptions:
+  ecmaVersion: latest
+  sourceType: module
+  project: ./tsconfig.json
+rules:
+  "@typescript-eslint/quotes":
+  - warn
+  - double
