@@ -1,5 +1,5 @@
 import "jest"
-import { parse } from "../src/commands"
+import { parse } from "../src/commandlines"
 import { InvalidSyntaxError } from "../src/errors"
 
 const EMPTY = { type: "empty", raw: "" }
