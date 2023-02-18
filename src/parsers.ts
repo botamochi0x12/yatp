@@ -1,33 +1,10 @@
-import { InvalidSyntaxError } from "./errors"
+import { InvalidSyntax, FailingParsing } from "./conditions"
 
 interface Node { type: string, raw: string, [index: string]: any }
 
 interface ContextToParse { text: string, index: number }
 
 interface ContextToBeParsed { node: Node, index: number }
-
-class InvalidSyntax {
-  type = "invalid-syntax"
-  raw: string
-  constructor (text: string, index: number) {
-    this.raw = text.slice(index)
-  }
-}
-
-class FailingParsing {
-  type = "failing-parsing"
-  raw: string
-  constructor (text: string, index: number) {
-    this.raw = text.slice(index)
-  }
-}
-
-export const parse = (text: string): Node => {
-  const context = parseScenario({ text, index: 0 })
-  if (context.node.type === "failing-parsing") throw new InvalidSyntaxError()
-  if (context.node.type === "invalid-syntax") throw new InvalidSyntaxError()
-  return context.node
-}
 
 export const parseScenario = ({
   text,
