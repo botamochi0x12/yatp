@@ -1,5 +1,6 @@
 import { InvalidSyntaxError } from "./errors"
 import { parseScenario } from "./parsers"
+import type { Node } from "./conditions"
 
 export const parse = (text: string): Node => {
   const context = parseScenario({ text, index: 0 })

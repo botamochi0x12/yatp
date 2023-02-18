@@ -1,10 +1,5 @@
 import { InvalidSyntax, FailingParsing } from "./conditions"
-
-interface Node { type: string, raw: string, [index: string]: any }
-
-interface ContextToParse { text: string, index: number }
-
-interface ContextToBeParsed { node: Node, index: number }
+import type { ContextToBeParsed, ContextToParse } from "./conditions"
 
 export const parseScenario = ({
   text,

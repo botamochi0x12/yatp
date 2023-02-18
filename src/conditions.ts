@@ -14,3 +14,9 @@ export class FailingParsing {
     this.raw = text.slice(index)
   }
 }
+
+export interface Node { type: string, raw: string, [index: string]: any }
+
+export interface ContextToParse { text: string, index: number }
+
+export interface ContextToBeParsed { node: Node, index: number }
