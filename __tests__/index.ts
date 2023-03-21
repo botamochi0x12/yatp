@@ -1,5 +1,6 @@
 import "jest"
-import { parse } from "../src/commandlines"
+import { parseLineComment } from './../src/parsers';
+// import { parse } from "../src/commandlines"
 import { InvalidSyntaxError } from "../src/errors"
 
 const EMPTY = { type: "empty", raw: "" }
@@ -7,13 +8,13 @@ const EMPTY = { type: "empty", raw: "" }
 describe("Minimal special symbols::", () => {
   it("should be valid for one line of line-comment with no content.", () => {
     const text = ";"
-    const parsedText = parse(text)
+    const parsedText = parseLineComment(text)
     expect(parsedText).toBeTruthy()
   })
   it("should be invalid for one line of block-comment with no content.", () => {
     const text = "/* */"
     // NOTE: Every closing block-comment pair (leading `*` and following `/`) needs to place alone inline.
-    expect(() => parse(text)).toThrowError(InvalidSyntaxError)
+    expect(parse(text)).toBeFalsy()
   })
   it("should be a monologue.", () => {
     const text = "#"
@@ -230,7 +231,7 @@ describe("Complex multi-line tags containing lines::", () => {
 describe("Simple text::", () => {
   it("should be valid.", () => {
     const text = "I'm a line of text."
-    const parsedText = parse(text)
+    const parsedText = parseText(text)
     expect(parsedText).toBeTruthy()
     expect(parsedText).toEqual({ type: "text", raw: "I'm a line of text." })
   })
