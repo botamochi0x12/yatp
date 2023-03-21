@@ -76,7 +76,7 @@ export const parseLineComment = ({
   const curr = line.search(";")
   if (curr === -1) return { node: new FailingParsing(text, curr), index: curr }
   return {
-    node: { type: "line-comment", raw: text.slice(curr, prev) },
+    node: { type: "line-comment", raw: text.slice(prev, curr) },
     index: prev + curr
   }
 }
