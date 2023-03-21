@@ -87,3 +87,15 @@ export const parseBlockComment = ({
 }: ContextToParse): ContextToBeParsed => {
   return { node: new FailingParsing(text, index), index }
 }
+
+export const parseString = ({
+  text,
+  index: prev
+}: ContextToParse): ContextToBeParsed => {
+  const curr = text.length - prev
+  // NOTE: Treat every character as a set of character sequence.
+  return {
+    node: {type: "string", text, raw: text.slice(prev, curr) },
+    index: curr
+  }
+}
