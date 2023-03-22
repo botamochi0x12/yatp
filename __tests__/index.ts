@@ -13,7 +13,7 @@ describe("Minimal special symbols::", () => {
   it("should be invalid for one line of block-comment with no content.", () => {
     const text = "/* */"
     // NOTE: Every closing block-comment pair (leading `*` and following `/`) needs to place alone inline.
-    expect(parseBlockComment({ text, index: 0 })).toBeFalsy()
+    expect(parseBlockComment({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
   })
   it("should be a monologue.", () => {
     const text = "#"
