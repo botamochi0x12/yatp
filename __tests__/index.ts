@@ -13,7 +13,7 @@ describe("Minimal special symbols::", () => {
   it("should be invalid for one line of block-comment with no content.", () => {
     const text = "/* */"
     // NOTE: Every closing block-comment pair (leading `*` and following `/`) needs to place alone inline.
-    expect(parseBlockComment({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseBlockComment({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
   it("should be a monologue.", () => {
     const text = "#"
@@ -21,22 +21,22 @@ describe("Minimal special symbols::", () => {
   })
   it("should throw an error with the empty label.", () => {
     const text = "*"
-    expect(parseLabel({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseLabel({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
   it("should throw an error with the empty single-line tag.", () => {
     const text = "@"
-    expect(parseSingleLineTag({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseSingleLineTag({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
   it("should throw an error with the empty multi-line tag.", () => {
     const text = "[]"
-    expect(parseMultiLineTag({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseMultiLineTag({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
 })
 
 describe("Simple single-lines::", () => {
   it("should be empty.", () => {
     const text = ""
-    expect(parseSingleLineTag({ text, index: 0 })).toMatchObject({ node: EMPTY })
+    expect(parseBareText({ text, index: 0 })).toMatchObject({ node: EMPTY })
   })
   it("should be a valid line of line-comment.", () => {
     const text = ";Line Comment"
@@ -44,7 +44,7 @@ describe("Simple single-lines::", () => {
   })
   it("should be invalid lines of block-comment.", () => {
     const text = "/* Block Comment */"
-    expect(parseBlockComment({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseBlockComment({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
   it("should be valid lines of block-comment.", () => {
     const text = `/*
@@ -78,7 +78,7 @@ describe("Simple single-lines::", () => {
 describe("Complex character declarations::", () => {
   it("should be invalid for nobody with no emotion.", () => {
     const text = "#:"
-    expect(parseCharacterDeclaration({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseCharacterDeclaration({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
   it("should be valid for an emotion declaration.", () => {
     const text = "#Jane:Angry"
@@ -88,11 +88,11 @@ describe("Complex character declarations::", () => {
   })
   it("should be invalid for a name with a trailing colon.", () => {
     const text = "#Jane:"
-    expect(parseCharacterDeclaration({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseCharacterDeclaration({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
   it("should be invalid for an emotion declamation with a trailing colon.", () => {
     const text = "#Jane:Angry:"
-    expect(parseCharacterDeclaration({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseCharacterDeclaration({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
 })
 
@@ -103,11 +103,11 @@ describe("Complex labels::", () => {
   })
   it("should be invalid for an invalid identifier.", () => {
     const text = "*17" // NOTE: `17` is a prime number.
-    expect(parseLabel({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseLabel({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
   it("should be invalid for an invalid identifier.", () => {
     const text = "*-"
-    expect(parseLabel({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseLabel({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
   it("should be valid for alternative text.", () => {
     const text = "*scene|extra"
@@ -117,11 +117,11 @@ describe("Complex labels::", () => {
   })
   it("should be invalid for space-separated parts.", () => {
     const text = "*scene extra"
-    expect(parseLabel({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseLabel({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
   it("should be invalid for a colon-separated label.", () => {
     const text = "*scene:extra"
-    expect(parseLabel({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseLabel({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
 })
 
@@ -132,11 +132,11 @@ describe("Complex single-line tags::", () => {
   })
   it("should be invalid for an invalid identifier.", () => {
     const text = "@17" // NOTE: `17` is a prime number.
-    expect(parseSingleLineTag({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseSingleLineTag({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
   it("should be invalid for an invalid identifier.", () => {
     const text = "@-"
-    expect(parseSingleLineTag({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseSingleLineTag({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
   it("should be valid for space-separated parts.", () => {
     const text = "@tag switch"
@@ -159,11 +159,11 @@ describe("Complex multi-line tags::", () => {
   })
   it("should be invalid for an invalid identifier.", () => {
     const text = "[17]" // NOTE: `17` is a prime number.
-    expect(parseMultiLineTag({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseMultiLineTag({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
   it("should be invalid for an invalid identifier.", () => {
     const text = "[-]"
-    expect(parseMultiLineTag({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseMultiLineTag({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
   it("should be valid for space-separated parts.", () => {
     const text = "[tag switch]"
@@ -190,13 +190,13 @@ describe("Complex multi-line tags containing lines::", () => {
     const text = `[
             17
             ]` // NOTE: `17` is a prime number.
-    expect(parseMultiLineTag({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseMultiLineTag({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
   it("should be invalid for an invalid identifier.", () => {
     const text = `[
             -
             ]`
-    expect(parseMultiLineTag({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseMultiLineTag({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
   it("should be valid for space-separated parts.", () => {
     const text = `[
@@ -223,7 +223,7 @@ describe("Complex multi-line tags containing lines::", () => {
             =
             value
         ]`
-    expect(parseMultiLineTag({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseMultiLineTag({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
 })
 
@@ -259,11 +259,11 @@ describe("Identifiers::", () => {
   })
   it("should not start with a number.", () => {
     const text = "7"
-    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
   it("should not start with a hyphen.", () => {
     const text = "-identifier"
-    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
   it("should start with an underscore.", () => {
     const text = "_identifier"
@@ -271,23 +271,23 @@ describe("Identifiers::", () => {
   })
   it("should not start with a number.", () => {
     const text = "0identifier"
-    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
   it("should not start with a dollar sign.", () => {
     const text = "$identifier"
-    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
   it("should not contain full-width characters.", () => {
     const text = "ＩＤＥＮＴＩＦＩＥＲ"
-    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
   it("should not contain a space.", () => {
     const text = "identifier identifier"
-    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
   it("should not contain a hyphen.", () => {
     const text = "identifier-identifier"
-    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
     // NOTE: This is an invalid identifier in JavaScript.
   })
 })

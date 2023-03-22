@@ -196,9 +196,16 @@ export const parseBareText = ({
   index: prev
 }: ContextToParse): ContextToBeParsed => {
   const curr = text.length - prev
+  if (text.slice(prev, prev + 1) === "_") {
+    // Reserve head and tail spaces.
+    return {
+      node: {type: "bare-text", text, raw: text.slice(prev + 1, curr) },
+      index: prev + 1
+    }
+  }
   // NOTE: Treat every character as a set of character sequence.
   return {
-    node: {type: "bare-text", text, raw: text.slice(prev, curr) },
+    node: {type: "bare-text", text, raw: text.slice(prev, curr).trim() },
     index: curr
   }
 }
