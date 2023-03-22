@@ -6,7 +6,7 @@ export class InvalidCharacterDeclarationError extends InvalidSyntaxError {}
 
 export class InvalidMonologueError extends InvalidSyntaxError {}
 
-export class InvalidOneLinerTagError extends InvalidSyntaxError {}
+export class InvalidSingleLineTagError extends InvalidSyntaxError {}
 
 export class InvalidMultiLineTagError extends InvalidSyntaxError {}
 

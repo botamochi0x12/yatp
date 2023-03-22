@@ -1,6 +1,16 @@
 import { InvalidSyntax, FailingParsing } from "./conditions"
 import type { ContextToBeParsed, ContextToParse } from "./conditions"
 
+/**
+ * Parse a scenario.
+ * @param text The text to be parsed.
+ * @param index The index to start parsing from.
+ * @returns The parsed node and the index to continue parsing from.
+ * ---
+ * @example
+ * >> parseScenario({text: "Hello, world!", index: 0})
+ * >> // => { node: { type: "monologue", text: "Hello, world!" }, index: 13 }
+ */
 export const parseScenario = ({
   text,
   index
@@ -16,6 +26,16 @@ export const parseScenario = ({
   return { node: new InvalidSyntax(text, text.length), index: text.length }
 }
 
+/**
+ * Parse a scenario line.
+ * @param text The text to be parsed.
+ * @param index The index to start parsing from.
+ * @returns The parsed node and the index to continue parsing from.
+ * ---
+ * @example
+ * >> parseScenarioLine({text: "Hello, world!", index: 0})
+ * >> // => { node: { type: "monologue", text: "Hello, world!" }, index: 13 }
+ */
 export const parseScenarioLine = ({
   text,
   index
@@ -28,11 +48,21 @@ export const parseScenarioLine = ({
   if (context.node.type === "monologue") return context
   context = parseCharacterDeclaration({ text, index })
   if (context.node.type === "character-declaration") return context
-  context = parseOneLinerTag({ text, index })
-  if (context.node.type === "one-liner-tag") return context
+  context = parseSingleLineTag({ text, index })
+  if (context.node.type === "single-line-tag") return context
   return { node: new InvalidSyntax(text, text.length), index: text.length }
 }
 
+/**
+ * Parse a character declaration.
+ * @param text The text to parse.
+ * @param index The index to start parsing from.
+ * @returns The parsed node and the index ti continue parsing from.
+ * ---
+ * @example
+ * >> parseCharacterDeclaration({text: "#Name", index: 0})
+ * >> // => { node: { type: "character-declaration", text: "#Name" }, index: 5 }
+ */
 export const parseCharacterDeclaration = ({
   text,
   index
@@ -40,6 +70,16 @@ export const parseCharacterDeclaration = ({
   return { node: new FailingParsing(text, index), index }
 }
 
+/**
+ * Parse a monologue.
+ * @param text The text to be parsed.
+ * @param index The index to start parsing from.
+ * @returns The parsed node and the index to continue parsing from.
+ * ---
+ * @example
+ * >> parseMonologue({text: "#\nHello, world!", index: 0})
+ * >> // => { node: { type: "monologue", text: "Hello, world!" }, index: 13 }
+ */
 export const parseMonologue = ({
   text,
   index
@@ -47,6 +87,16 @@ export const parseMonologue = ({
   return { node: new FailingParsing(text, index), index }
 }
 
+/**
+ * Parse a label.
+ * @param text The text to be parsed.
+ * @param index The index to start parsing from.
+ * @returns The parsed node and the index to continue parsing from.
+ * ---
+ * @example
+ * >> parseLabel({text: "*label", index: 0})
+ * >> // => { node: { type: "label", text: "*label" }, index: 6 }
+ */
 export const parseLabel = ({
   text,
   index
@@ -54,13 +104,33 @@ export const parseLabel = ({
   return { node: new FailingParsing(text, index), index }
 }
 
-export const parseOneLinerTag = ({
+/**
+ * Parse a single-line tag.
+ * @param text The text to be parsed.
+ * @param index The index to start parsing from.
+ * @returns The parsed node and the index to continue parsing from.
+ * ---
+ * @example
+ * >> parseOneLinerTag({text: "@single_line_tag", index: 0})
+ * >> // => { node: { type: "single-line-tag", text: "@single_line_tag" }, index: 14 }
+ */
+export const parseSingleLineTag = ({
   text,
   index
 }: ContextToParse): ContextToBeParsed => {
   return { node: new FailingParsing(text, index), index }
 }
 
+/**
+ * Parse a multi-line tag.
+ * @param text The text to be parsed.
+ * @param index The index to start parsing from.
+ * @returns The parsed node and the index to continue parsing from.
+ * ---
+ * @example
+ * >> parseMultiLineTag({text: "[multi_line_tag]", index: 0})
+ * >> // => { node: { type: "multi-line-tag", text: "[multi_line_tag]" }, index: 17 }
+ */
 export const parseMultiLineTag = ({
   text,
   index
@@ -68,6 +138,16 @@ export const parseMultiLineTag = ({
   return { node: new FailingParsing(text, index), index }
 }
 
+/**
+ * Parse a line comment.
+ * @param text The text to be parsed.
+ * @param index The index to start parsing from.
+ * @returns The parsed node and the index to continue parsing from.
+ * ---
+ * @example
+ * >> parseLineComment({text: "; Line Comment", index: 0})
+ * >> // => { node: { type: "line-comment", text: "; Line Comment" }, index: 14 }
+ */
 export const parseLineComment = ({
   text,
   index: prev
@@ -81,6 +161,16 @@ export const parseLineComment = ({
   }
 }
 
+/**
+ * Parse a block comment.
+ * @param text The text to be parsed.
+ * @param index The index to start parsing from.
+ * @returns The parsed node and the index to continue parsing from.
+ * ---
+ * @example
+ * >> parseBlockComment({text: "\/* Block Comment *\/", index: 0})
+ * >> // => { node: { type: "block-comment", text: "\/* Block Comment *\/" }, index: 19 }
+ */
 export const parseBlockComment = ({
   text,
   index
@@ -88,14 +178,37 @@ export const parseBlockComment = ({
   return { node: new FailingParsing(text, index), index }
 }
 
-export const parseString = ({
+/**
+ * Parse a string.
+ * @param text The text to be parsed.
+ * @param index The index to start parsing from.
+ * @returns The parsed node and the index to continue parsing from.
+ * ---
+ * @example
+ * >> parseBareText({text: "Hello, world!", index: 0})
+ * >> // => { node: { type: "string", text: "Hello, world!" }, index: 13 }
+ * @example
+ * >> parseBareText({text: "_ Hello, world!", index: 0})
+ * >> // => { node: { type: "string", text: " Hello, world!" }, index: 14 }
+ */
+export const parseBareText = ({
   text,
   index: prev
 }: ContextToParse): ContextToBeParsed => {
   const curr = text.length - prev
   // NOTE: Treat every character as a set of character sequence.
   return {
-    node: {type: "string", text, raw: text.slice(prev, curr) },
+    node: {type: "bare-text", text, raw: text.slice(prev, curr) },
     index: curr
   }
+}
+
+/**
+ * Parse an identifier.
+ */
+export const parseIdentifier = ({
+  text,
+  index
+}: ContextToParse): ContextToBeParsed => {
+  return { node: new FailingParsing(text, index), index }
 }
