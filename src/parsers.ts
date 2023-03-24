@@ -212,6 +212,13 @@ export const parseBareText = ({
 
 /**
  * Parse an identifier.
+ * @param text The text to be parsed.
+ * @param index The index to start parsing from.
+ * @returns The parsed node and the index to continue parsing from.
+ * ---
+ * @example
+ * >> parseIdentifier({text: "Name", index: 0})
+ * >> // => { node: { type: "identifier", text: "Name" }, index: 4 }
  */
 export const parseIdentifier = ({
   text,
