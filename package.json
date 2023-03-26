@@ -65,5 +65,8 @@
     "typescript": "^4.9.4",
     "typescript-eslint": "0.0.1-alpha.0"
   },
-  "##": "##COMMENT"
+  "##": "##COMMENT",
+  "dependencies": {
+    "unist-builder": "^3.0.1"
+  }
 }

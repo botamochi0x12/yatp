@@ -8,7 +8,7 @@ describe("Minimal special symbols::", () => {
   it("should be valid for one line of line-comment with no content.", () => {
     const text = ";"
     const parsedText = parseLineComment({ text, index: 0 })
-    expect(parsedText).toBeTruthy()
+    expect(parsedText).toMatchObject({ node: { type: "line-comment" }})
   })
   it("should be invalid for one line of block-comment with no content.", () => {
     const text = "/* */"
@@ -40,7 +40,7 @@ describe("Simple single-lines::", () => {
   })
   it("should be a valid line of line-comment.", () => {
     const text = ";Line Comment"
-    expect(parseLineComment({ text, index: 0 })).toBeTruthy()
+    expect(parseLineComment({ text, index: 0 })).toMatchObject({ node: { type: "line-comment" } })
   })
   it("should be invalid lines of block-comment.", () => {
     const text = "/* Block Comment */"
@@ -51,27 +51,27 @@ describe("Simple single-lines::", () => {
         Block Comment
         */`
     // NOTE: Every closing block-comment pair (leading `*` and following `/`) needs to place alone inline.
-    expect(parseLineComment({ text, index: 0 })).toBeTruthy()
+    expect(parseBlockComment({ text, index: 0 })).toMatchObject({ node : { type: "block-comment" } })
   })
   it("should be a valid line of text.", () => {
     const text = "I'm a line of text."
-    expect(parseLineComment({ text, index: 0 })).toBeTruthy()
+    expect(parseBareText({ text, index: 0 })).toMatchObject({ node : { type: "bare-text" } })
   })
   it("should be a valid character declaration.", () => {
     const text = "#character-declaration"
-    expect(parseLineComment({ text, index: 0 })).toBeTruthy()
+    expect(parseCharacterDeclaration({ text, index: 0 })).toMatchObject({ node : { type: "character-declaration" } })
   })
   it("should be a valid label.", () => {
     const text = "*label"
-    expect(parseLineComment({ text, index: 0 })).toBeTruthy()
+    expect(parseLabel({ text, index: 0 })).toMatchObject({ node: { type: "label" } })
   })
   it("should be a valid single-line tag.", () => {
     const text = "@tag"
-    expect(parseLineComment({ text, index: 0 })).toBeTruthy()
+    expect(parseSingleLineTag({ text, index: 0 })).toMatchObject({ node: { type: "single-line-tag" } })
   })
   it("should be a valid line of a multi-line tag.", () => {
     const text = "[tag]"
-    expect(parseLineComment({ text, index: 0 })).toBeTruthy()
+    expect(parseMultiLineTag({ text, index: 0 })).toMatchObject({ node: { type: "multi-line-tag" } })
   })
 })
 
@@ -83,7 +83,6 @@ describe("Complex character declarations::", () => {
   it("should be valid for an emotion declaration.", () => {
     const text = "#Jane:Angry"
     const parsedText = parseCharacterDeclaration({ text, index: 0 })
-    expect(parsedText).toBeTruthy()
     expect(parsedText).toMatchObject({ node: { type: "character-declaration", name: "Jane", emotion: "Angry" } })
   })
   it("should be invalid for a name with a trailing colon.", () => {
@@ -99,7 +98,7 @@ describe("Complex character declarations::", () => {
 describe("Complex labels::", () => {
   it("should be valid for a valid identifier.", () => {
     const text = "*_"
-    expect(parseLabel({ text, index: 0 })).toBeTruthy()
+    expect(parseLabel({ text, index: 0 })).toMatchObject({ node: { type: "label" } })
   })
   it("should be invalid for an invalid identifier.", () => {
     const text = "*17" // NOTE: `17` is a prime number.
@@ -112,7 +111,6 @@ describe("Complex labels::", () => {
   it("should be valid for alternative text.", () => {
     const text = "*scene|extra"
     const parsedText = parseLabel({ text, index: 0 })
-    expect(parsedText).toBeTruthy()
     expect(parsedText).toMatchObject({ node: { type: "label-declaration", name: "scene", value: "extra" } })
   })
   it("should be invalid for space-separated parts.", () => {
@@ -128,7 +126,7 @@ describe("Complex labels::", () => {
 describe("Complex single-line tags::", () => {
   it("should be valid for a valid identifier.", () => {
     const text = "@_"
-    expect(parseSingleLineTag({ text, index: 0 })).toBeTruthy()
+    expect(parseSingleLineTag({ text, index: 0 })).toMatchObject({ node: { type: "single-line-tag" } })
   })
   it("should be invalid for an invalid identifier.", () => {
     const text = "@17" // NOTE: `17` is a prime number.
@@ -141,21 +139,19 @@ describe("Complex single-line tags::", () => {
   it("should be valid for space-separated parts.", () => {
     const text = "@tag switch"
     const parsedText = parseSingleLineTag({ text, index: 0 })
-    expect(parsedText).toBeTruthy()
-    expect(parsedText).toMatchObject({ node: { type: "tag", parameters: ["switch"] } })
+    expect(parsedText).toMatchObject({ node: { type: "single-line-tag", tag: "tag", parameters: ["switch"] } })
   })
   it("should be valid for a KV pair.", () => {
     const text = "@tag key=value"
     const parsedText = parseSingleLineTag({ text, index: 0 })
-    expect(parsedText).toBeTruthy()
-    expect(parsedText).toMatchObject({ node: { type: "tag", parameters: ["key=value"] } })
+    expect(parsedText).toMatchObject({ node: { type: "single-line-tag", tag: "tag", parameters: ["key=value"] } })
   })
 })
 
 describe("Complex multi-line tags::", () => {
   it("should be valid for a valid identifier.", () => {
     const text = "[_]"
-    expect(parseMultiLineTag({ text, index: 0 })).toBeTruthy()
+    expect(parseMultiLineTag({ text, index: 0 })).toMatchObject({ node: { type: "multi-line-tag", tag: "_"}})
   })
   it("should be invalid for an invalid identifier.", () => {
     const text = "[17]" // NOTE: `17` is a prime number.
@@ -169,22 +165,22 @@ describe("Complex multi-line tags::", () => {
     const text = "[tag switch]"
     const parsedText = parseMultiLineTag({ text, index: 0 })
     expect(parsedText).toBeTruthy()
-    expect(parsedText).toMatchObject({ node: { type: "tag", parameters: ["switch"] } })
+    expect(parsedText).toMatchObject({ node: { type: "multi-line-tag", tag: "tag", parameters: ["switch"] } })
   })
   it("should be valid for a KV pair.", () => {
     const text = "[tag key=value]"
     const parsedText = parseMultiLineTag({ text, index: 0 })
     expect(parsedText).toBeTruthy()
-    expect(parsedText).toMatchObject({ node: { type: "tag", parameters: ["key=value"] } })
+    expect(parsedText).toMatchObject({ node: { type: "multi-line-tag", tag: "tag", parameters: ["key=value"] } })
   })
 })
 
 describe("Complex multi-line tags containing lines::", () => {
-  it("should be invalid for an invalid identifier.", () => {
+  it("should be valid for a valid identifier.", () => {
     const text = `[
             _
             ]`
-    expect(parseMultiLineTag({ text, index: 0 })).toBeTruthy()
+    expect(parseMultiLineTag({ text, index: 0 })).toMatchObject({ node: {type: "multi-line-tag", tag: "_" }})
   })
   it("should be invalid for an invalid identifier.", () => {
     const text = `[
@@ -204,8 +200,7 @@ describe("Complex multi-line tags containing lines::", () => {
             switch
             ]`
     const parsedText = parseMultiLineTag({ text, index: 0 })
-    expect(parsedText).toBeTruthy()
-    expect(parsedText).toMatchObject({ node: { type: "tag", parameters: ["switch"] } })
+    expect(parsedText).toMatchObject({ node: { type: "multi-line-tag", tag: "tag", parameters: ["switch"] } })
   })
   it("should be valid for a KV pair.", () => {
     const text = `[
@@ -213,8 +208,7 @@ describe("Complex multi-line tags containing lines::", () => {
             key=value
         ]`
     const parsedText = parseMultiLineTag({ text, index: 0 })
-    expect(parsedText).toBeTruthy()
-    expect(parsedText).toMatchObject({ node: { type: "tag", parameters: ["key=value"] } })
+    expect(parsedText).toMatchObject({ node: { type: "multi-line-tag", tag: "tag", parameters: ["key=value"] } })
   })
   it("should be invalid for a multi-line KV pair.", () => {
     const text = `[
@@ -231,13 +225,11 @@ describe("Simple text::", () => {
   it("should be valid.", () => {
     const text = "I'm a line of text."
     const parsedText = parseBareText({ text, index: 0 })
-    expect(parsedText).toBeTruthy()
     expect(parsedText).toMatchObject({ node: { type: "bare-text", raw: "I'm a line of text." } })
   })
   it("should trim leading spaces.", () => {
     const text = " I'm a line of text."
     const parsedText = parseBareText({ text, index: 0 })
-    expect(parsedText).toBeTruthy()
     expect(parsedText).toMatchObject({ node: { type: "bare-text", raw: "I'm a line of text." } })
     // NOTE: The leading space character is removed.
     // NOTE: See also: <https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/String/trim>
@@ -245,7 +237,6 @@ describe("Simple text::", () => {
   it("should not trim leading spaces on starting with a underscore.", () => {
     const text = "_   I'm a line of text."
     const parsedText = parseBareText({ text, index: 0 })
-    expect(parsedText).toBeTruthy()
     expect(parsedText).toMatchObject({ node: { type: "bare-text", raw: "   I'm a line of text." } })
     // NOTE: The leading underscore is removed
     // NOTE: but any leading space characters just after the underscore is kept.
@@ -253,9 +244,9 @@ describe("Simple text::", () => {
 })
 
 describe("Identifiers::", () => {
-  it("should start with an alphabet.", () => {
+  it("can start with an alphabet.", () => {
     const text = "a"
-    expect(parseIdentifier({ text, index: 0 })).toBeTruthy()
+    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "identifier", raw: text }})
   })
   it("should not start with a number.", () => {
     const text = "7"
@@ -265,9 +256,9 @@ describe("Identifiers::", () => {
     const text = "-identifier"
     expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
-  it("should start with an underscore.", () => {
+  it("can start with an underscore.", () => {
     const text = "_identifier"
-    expect(parseIdentifier({ text, index: 0 })).toBeTruthy()
+    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "identifier", raw: text }})
   })
   it("should not start with a number.", () => {
     const text = "0identifier"
