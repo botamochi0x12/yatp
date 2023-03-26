@@ -128,7 +128,7 @@ describe("Complex single-line tags::", () => {
     const text = "@_"
     expect(parseSingleLineTag({ text, index: 0 })).toMatchObject({ node: { type: "single-line-tag" } })
   })
-  it("should be invalid for an invalid identifier.", () => {
+  it("should be invalid for an invalid identifier.", () => {6
     const text = "@17" // NOTE: `17` is a prime number.
     expect(parseSingleLineTag({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
   })
