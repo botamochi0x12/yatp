@@ -182,8 +182,8 @@ export const parseBlockComment = ({
   if (indexOfClosingBlock < 0) {
     return { node: new InvalidSyntax(text, index), index }
   }
-  const textMatched = textOfInterest.slice(0, indexOfClosingBlock+2)
-  return { node: {type: "block-comment", raw: textMatched, value: textMatched.slice("/*".length, -("*/".length))}, index: index + textMatched.length }
+  const textMatched = textOfInterest.slice(0, indexOfClosingBlock + 2)
+  return { node: { type: "block-comment", raw: textMatched, value: textMatched.slice("/*".length, -("*/".length)) }, index: index + textMatched.length }
 }
 
 /**
@@ -207,13 +207,13 @@ export const parseBareText = ({
   if (text.slice(prev, prev + 1) === "_") {
     // Reserve head and tail spaces.
     return {
-      node: {type: "bare-text", raw: text.slice(prev + 1, curr) },
+      node: { type: "bare-text", raw: text.slice(prev + 1, curr) },
       index: curr
     }
   }
   // NOTE: Treat every character as a set of character sequence.
   return {
-    node: {type: "bare-text", raw: text.slice(prev, curr).trim() },
+    node: { type: "bare-text", raw: text.slice(prev, curr).trim() },
     index: curr
   }
 }
@@ -238,7 +238,7 @@ export const parseIdentifier = ({
   }
   const identifier = maybeIdentifiers[0]
   const nextIndex = prev + identifier.length
-  return { node: { type: "identifier", raw: text.slice(prev, nextIndex), value: identifier}, index: nextIndex }
+  return { node: { type: "identifier", raw: text.slice(prev, nextIndex), value: identifier }, index: nextIndex }
 }
 
 /**
