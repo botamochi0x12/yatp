@@ -12,7 +12,7 @@ describe("Minimal special symbols::", () => {
   it("should be invalid for one line of block-comment with no content.", () => {
     const text = "/* */"
     // NOTE: Every closing block-comment pair (leading `*` and following `/`) needs to place alone inline.
-    expect(parseBlockComment({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
+    expect(parseBlockComment({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
   })
   it("should be a monologue.", () => {
     const text = "#"
@@ -43,7 +43,7 @@ describe("Simple single-lines::", () => {
   })
   it("should be invalid lines of block-comment.", () => {
     const text = "/* Block Comment */"
-    expect(parseBlockComment({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
+    expect(parseBlockComment({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
   })
   it("should be valid lines of block-comment.", () => {
     const text = `/*
@@ -256,11 +256,11 @@ describe("Identifiers::", () => {
   })
   it("should not start with a number.", () => {
     const text = "7"
-    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
+    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
   })
   it("should not start with a hyphen.", () => {
     const text = "-identifier"
-    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
+    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
   })
   it("can start with an underscore.", () => {
     const text = "_identifier"
@@ -268,23 +268,23 @@ describe("Identifiers::", () => {
   })
   it("should not start with a number.", () => {
     const text = "0identifier"
-    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
+    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
   })
   it("should not start with a dollar sign.", () => {
     const text = "$identifier"
-    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
+    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
   })
   it("should not contain full-width characters.", () => {
     const text = "ＩＤＥＮＴＩＦＩＥＲ"
-    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
+    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
   })
   it("should not contain a space.", () => {
     const text = "identifier identifier"
-    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
+    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
   })
   it("should not contain a hyphen.", () => {
     const text = "identifier-identifier"
-    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
+    expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
     // NOTE: This is an invalid identifier in JavaScript.
   })
 })

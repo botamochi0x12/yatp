@@ -181,8 +181,13 @@ export const parseBlockComment = ({
   const indexOfClosingBlock = textOfInterest.search(/\*\//);
   if (indexOfClosingBlock < 0) {
     return { node: new InvalidSyntax(text, index), index }
+    // NOTE: The block comment should be closed.
   }
-  const textMatched = textOfInterest.slice(0, indexOfClosingBlock + 2)
+  const textMatched = textOfInterest.slice(0, indexOfClosingBlock + "*/".length)
+  if (!textMatched.includes("\n")) {
+    return { node: new InvalidSyntax(text, index), index }
+    // NOTE: The block comment should be in multiple lines.
+  }
   return { node: { type: "block-comment", raw: textMatched, value: textMatched.slice("/*".length, -("*/".length)) }, index: index + textMatched.length }
 }
 
