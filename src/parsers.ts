@@ -34,14 +34,13 @@ export const parseScenario = ({
  * ---
  * @example
  * >> parseScenarioLine({text: "Hello, world!", index: 0})
- * >> // => { node: { type: "monologue", text: "Hello, world!" }, index: 13 }
+ * >> // => { node: { type: "bare-text", text: "Hello, world!" }, index: 13 }
  */
 export const parseScenarioLine = ({
   text,
   index
 }: ContextToParse): ContextToBeParsed => {
   let context: ContextToBeParsed
-  if (text.length === 0) return { node: { type: "empty", raw: "" }, index }
   context = parseLabel({ text, index })
   if (context.node.type === "label") return context
   context = parseMonologue({ text, index })
@@ -152,9 +151,9 @@ export const parseLineComment = ({
   text,
   index: prev
 }: ContextToParse): ContextToBeParsed => {
-  const line = text.split(/\n/, 1)[0]
+  const line = text.slice(prev).split(/\n/, 1)[0]
   const curr = line.search(";")
-  if (curr === -1) return { node: new FailingParsing(text, curr), index: curr }
+  if (curr === -1) return { node: new FailingParsing(text, prev), index: prev }
   return {
     node: { type: "line-comment", raw: text.slice(prev, curr) },
     index: prev + curr
@@ -175,7 +174,16 @@ export const parseBlockComment = ({
   text,
   index
 }: ContextToParse): ContextToBeParsed => {
-  return { node: new FailingParsing(text, index), index }
+  const textOfInterest = text.slice(index)
+  if (!textOfInterest.startsWith("/*")) {
+    return { node: new FailingParsing(text, index), index }
+  }
+  const indexOfClosingBlock = textOfInterest.search(/\*\//);
+  if (indexOfClosingBlock < 0) {
+    return { node: new InvalidSyntax(text, index), index }
+  }
+  const textMatched = textOfInterest.slice(0, indexOfClosingBlock+2)
+  return { node: {type: "block-comment", raw: textMatched, value: textMatched.slice("/*".length, -("*/".length))}, index: index + textMatched.length }
 }
 
 /**
@@ -195,17 +203,17 @@ export const parseBareText = ({
   text,
   index: prev
 }: ContextToParse): ContextToBeParsed => {
-  const curr = text.length - prev
+  const curr = text.length + prev
   if (text.slice(prev, prev + 1) === "_") {
     // Reserve head and tail spaces.
     return {
-      node: {type: "bare-text", text, raw: text.slice(prev + 1, curr) },
-      index: prev + 1
+      node: {type: "bare-text", raw: text.slice(prev + 1, curr) },
+      index: curr
     }
   }
   // NOTE: Treat every character as a set of character sequence.
   return {
-    node: {type: "bare-text", text, raw: text.slice(prev, curr).trim() },
+    node: {type: "bare-text", raw: text.slice(prev, curr).trim() },
     index: curr
   }
 }
@@ -222,15 +230,15 @@ export const parseBareText = ({
  */
 export const parseIdentifier = ({
   text,
-  index
+  index: prev
 }: ContextToParse): ContextToBeParsed => {
-  const includeAnyTokens = (text: string): boolean => (
-    [";", "*/", "/*", " "].map((s: string) => text.includes(s))
-    ).reduce((prev, curr) => prev || curr);
-  if (includeAnyTokens(text)) {
-    return { node: new FailingParsing(text, index), index }
+  const maybeIdentifiers = text.slice(prev).match(/^[a-zA-Z_][a-zA-Z0-9_]*?$/)
+  if (!maybeIdentifiers || maybeIdentifiers.length === 0) {
+    return { node: new InvalidSyntax(text, prev), index: prev }
   }
-  return { node: { type: "identifier", raw: text}, index: text.length }
+  const identifier = maybeIdentifiers[0]
+  const nextIndex = prev + identifier.length
+  return { node: { type: "identifier", raw: text.slice(prev, nextIndex), value: identifier}, index: nextIndex }
 }
 
 /**
@@ -243,11 +251,11 @@ export const parseIdentifier = ({
  * >> parseEmpty({text: "", index: 0});
  * >> // => { node: { type: "empty", text: ""}, index: 0 }
  */
-const parseEmpty = ({
+export const parseEmpty = ({
   text,
   index
 }: ContextToParse): ContextToBeParsed => {
-  if (text.length !== 0) {
+  if (index !== 0 || text.length !== 0) {
     return { node: new FailingParsing(text, index), index }
   }
   return { node: { type: "empty", raw: "" }, index: 0 }
