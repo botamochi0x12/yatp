@@ -9,7 +9,7 @@ import type { ContextToBeParsed, ContextToParse } from "./conditions"
  * ---
  * @example
  * >> parseScenario({text: "Hello, world!", index: 0})
- * >> // => { node: { type: "monologue", text: "Hello, world!" }, index: 13 }
+ * >> // => { node: { type: "bare-text", text: "Hello, world!" }, index: 13 }
  */
 export const parseScenario = ({
   text,
@@ -64,9 +64,23 @@ export const parseScenarioLine = ({
  */
 export const parseCharacterDeclaration = ({
   text,
-  index
+  index: prev
 }: ContextToParse): ContextToBeParsed => {
-  return { node: new FailingParsing(text, index), index }
+  const lineOfInterest = text.slice(prev).split(/\n/, 1)[0]
+  if (!lineOfInterest.startsWith("#")) return { node: new FailingParsing(text, prev), index: prev }
+  const curr = prev + lineOfInterest.length
+  const [narrative, ...adjectives] = lineOfInterest.slice(1).split(/:/)
+  if (narrative.length === 0) {
+    return { node: new InvalidSyntax(text, prev), index: curr + 1 }
+  }
+  if (adjectives.length > 1) {
+    return { node: new InvalidSyntax(text, prev), index: curr + 1 }
+  }
+  if (adjectives.length === 1 && adjectives[0].length === 0) {
+    return { node: new InvalidSyntax(text, prev), index: curr + 1 }
+  }
+  const emotion = adjectives.length === 1 ? adjectives[0] : undefined
+  return { node: { type: "character-declaration", narrative, emotion, raw: lineOfInterest }, index: curr + 1 }
 }
 
 /**
@@ -83,7 +97,11 @@ export const parseMonologue = ({
   text,
   index
 }: ContextToParse): ContextToBeParsed => {
-  return { node: new FailingParsing(text, index), index }
+  if (text.slice(index, index + ("#\n").length) !== "#\n") {
+    return { node: new FailingParsing(text, index), index }
+  }
+  const nextIndex = index + ("#\n").length
+  return { node: { type: "monologue", raw: text.slice(index, nextIndex) }, index: nextIndex }
 }
 
 /**
@@ -100,7 +118,15 @@ export const parseLabel = ({
   text,
   index
 }: ContextToParse): ContextToBeParsed => {
-  return { node: new FailingParsing(text, index), index }
+  const lineOfInterest = text.slice(index).split(/\n/, 1)[0]
+  // TODO: Check if the label is valid.
+  if (!lineOfInterest.startsWith("*")) { return { node: new FailingParsing(text, index), index } }
+  if (lineOfInterest.length == ("*").length) { return { node: new InvalidSyntax(text, index), index: index + lineOfInterest.length + 1 } }
+  const label = lineOfInterest.slice(1).match(/^[a-zA-Z_]+/)?.[0]
+  if (label === undefined) {
+    return { node: new InvalidSyntax(text, index), index: index + lineOfInterest.length + 1 }
+  }
+  return { node: { type: "label", label, raw: lineOfInterest }, index: index + lineOfInterest.length + 1 }
 }
 
 /**
@@ -115,9 +141,22 @@ export const parseLabel = ({
  */
 export const parseSingleLineTag = ({
   text,
-  index
+  index: prev
 }: ContextToParse): ContextToBeParsed => {
-  return { node: new FailingParsing(text, index), index }
+  if (!text.startsWith("@")) return { node: new FailingParsing(text, prev), index: prev }
+  const lineOfInterest = text.slice(prev).split(/\n/, 1)[0]
+  // TODO: Check if the components of the tag are valid.
+  const curr = prev + lineOfInterest.length
+  if (curr - prev == ("@").length) {
+    return { node: new InvalidSyntax(text, curr), index: curr }
+  }
+  const tag = lineOfInterest.slice(1).match(/^[a-zA-Z_]+/)?.[0]
+  if (typeof tag === "undefined") {
+    return { node: new InvalidSyntax(text, curr), index: curr }
+  }
+  // TODO: Parse parameters.
+  const parameters = {}
+  return { node: { type: "single-line-tag", raw: lineOfInterest.slice(1), tag, parameters }, index: curr + 1 }
 }
 
 /**
@@ -132,9 +171,27 @@ export const parseSingleLineTag = ({
  */
 export const parseMultiLineTag = ({
   text,
-  index
+  index: prev
 }: ContextToParse): ContextToBeParsed => {
-  return { node: new FailingParsing(text, index), index }
+  if (!text.startsWith("[")) {
+    return { node: new FailingParsing(text, prev), index: prev }
+  }
+  const indexOfClosingTag = text.slice(prev).search(/\]/)
+  if (indexOfClosingTag < 0) {
+    return { node: new FailingParsing(text, prev), index: prev }
+  }
+  const textOfInterest = text.slice(prev, indexOfClosingTag)
+  const curr = prev + textOfInterest.length
+  if (curr - prev == ("[]").length) {
+    return { node: new InvalidSyntax(text, prev), index: curr }
+  }
+  const tag = textOfInterest.slice(1).match(/^[a-zA-Z_]+/)?.[0]
+  if (typeof tag === "undefined") {
+    return { node: new InvalidSyntax(text, curr), index: curr }
+  }
+  // TODO: Parse parameters.
+  const parameters = {}
+  return { node: { type: "multi-line-tag", raw: textOfInterest.slice(1, -1).replace("\n", " "), tag, parameters }, index: curr }
 }
 
 /**
@@ -152,11 +209,10 @@ export const parseLineComment = ({
   index: prev
 }: ContextToParse): ContextToBeParsed => {
   const line = text.slice(prev).split(/\n/, 1)[0]
-  const curr = line.search(";")
-  if (curr === -1) return { node: new FailingParsing(text, prev), index: prev }
+  if (!line.startsWith(";")) return { node: new FailingParsing(text, prev), index: prev }
   return {
-    node: { type: "line-comment", raw: text.slice(prev, curr) },
-    index: prev + curr
+    node: { type: "line-comment", raw: line },
+    index: prev + line.length + 1
   }
 }
 
@@ -183,12 +239,12 @@ export const parseBlockComment = ({
     return { node: new InvalidSyntax(text, index), index }
     // NOTE: The block comment should be closed.
   }
-  const textMatched = textOfInterest.slice(0, indexOfClosingBlock + "*/".length)
+  const textMatched = textOfInterest.slice(0, indexOfClosingBlock + ("*/").length)
   if (!textMatched.includes("\n")) {
     return { node: new InvalidSyntax(text, index), index }
     // NOTE: The block comment should be in multiple lines.
   }
-  return { node: { type: "block-comment", raw: textMatched, value: textMatched.slice("/*".length, -("*/".length)) }, index: index + textMatched.length }
+  return { node: { type: "block-comment", raw: textMatched, value: textMatched.slice(("/*").length, -(("*/").length)) }, index: index + textMatched.length }
 }
 
 /**
@@ -208,18 +264,18 @@ export const parseBareText = ({
   text,
   index: prev
 }: ContextToParse): ContextToBeParsed => {
-  const curr = text.length + prev
+  const curr = prev + text.length
   if (text.slice(prev, prev + 1) === "_") {
     // Reserve head and tail spaces.
     return {
       node: { type: "bare-text", raw: text.slice(prev + 1, curr) },
-      index: curr
+      index: curr + 1
     }
   }
   // NOTE: Treat every character as a set of character sequence.
   return {
     node: { type: "bare-text", raw: text.slice(prev, curr).trim() },
-    index: curr
+    index: curr + 1
   }
 }
 
