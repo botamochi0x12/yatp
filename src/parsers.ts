@@ -224,5 +224,31 @@ export const parseIdentifier = ({
   text,
   index
 }: ContextToParse): ContextToBeParsed => {
-  return { node: new FailingParsing(text, index), index }
+  const includeAnyTokens = (text: string): boolean => (
+    [";", "*/", "/*", " "].map((s: string) => text.includes(s))
+    ).reduce((prev, curr) => prev || curr);
+  if (includeAnyTokens(text)) {
+    return { node: new FailingParsing(text, index), index }
+  }
+  return { node: { type: "identifier", raw: text}, index: text.length }
+}
+
+/**
+ * Parse an empty.
+ * @param text The text to parsed but being empty.
+ * @param index The index to start parsing from but 0.
+ * @return The EMPTY node and the index 0.
+ * ---
+ * @example
+ * >> parseEmpty({text: "", index: 0});
+ * >> // => { node: { type: "empty", text: ""}, index: 0 }
+ */
+const parseEmpty = ({
+  text,
+  index
+}: ContextToParse): ContextToBeParsed => {
+  if (text.length !== 0) {
+    return { node: new FailingParsing(text, index), index }
+  }
+  return { node: { type: "empty", raw: "" }, index: 0 }
 }
