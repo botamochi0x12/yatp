@@ -1,6 +1,5 @@
 import "jest"
 import { parseLineComment, parseSingleLineTag, parseCharacterDeclaration, parseLabel, parseBlockComment, parseMultiLineTag, parseBareText, parseIdentifier } from './../src/parsers';
-import { InvalidSyntaxError } from "../src/errors"
 
 const EMPTY = { type: "empty", raw: "" }
 
