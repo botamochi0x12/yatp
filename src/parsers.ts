@@ -182,7 +182,7 @@ export const parseMultiLineTag = ({
   if (indexOfClosingTag < 0) {
     return { node: new FailingParsing(text, prev), index: prev }
   }
-  const textOfInterest = text.slice(prev, indexOfClosingTag)
+  const textOfInterest = text.slice(prev, indexOfClosingTag + 1)
   const curr = prev + textOfInterest.length
   const lineOfInterest = textOfInterest.replace(/\n/g, " ")
   if (lineOfInterest.slice(1, -1).replace(/\s/g, "").length === 0) {
