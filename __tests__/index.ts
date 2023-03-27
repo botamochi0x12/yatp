@@ -79,6 +79,8 @@ describe("Complex character declarations::", () => {
   it("should be invalid for nobody with no emotion.", () => {
     const text = "#:"
     expect(parseCharacterDeclaration({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
+    // NOTE: This behavior is better than ignoring potential typographic errors,
+    // NOTE: however it can be different from another implementation.
   })
   it("should be valid for an emotion declaration.", () => {
     const text = "#Jane:Angry"
@@ -88,10 +90,14 @@ describe("Complex character declarations::", () => {
   it("should be invalid for a name with a trailing colon.", () => {
     const text = "#Jane:"
     expect(parseCharacterDeclaration({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
+    // NOTE: This behavior is better than ignoring potential typographic errors,
+    // NOTE: however it can be different from another implementation.
   })
   it("should be invalid for an emotion declamation with a trailing colon.", () => {
     const text = "#Jane:Angry:"
     expect(parseCharacterDeclaration({ text, index: 0 })).toMatchObject({ node: { type: "failing-parsing" } })
+    // NOTE: This behavior is better than ignoring potential typographic errors,
+    // NOTE: however it can be different from another implementation.
   })
 })
 
