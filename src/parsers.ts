@@ -184,10 +184,11 @@ export const parseMultiLineTag = ({
   }
   const textOfInterest = text.slice(prev, indexOfClosingTag)
   const curr = prev + textOfInterest.length
-  if (curr - prev == ("[]").length) {
+  const lineOfInterest = textOfInterest.replace(/\n/g, " ")
+  if (lineOfInterest.slice(1, -1).replace(/\s/g, "").length === 0) {
     return { node: new InvalidSyntax(text, prev), index: curr }
   }
-  const tag = textOfInterest.slice(1).match(/^[a-zA-Z_]+/)?.[0]
+  const tag = lineOfInterest.slice(1, -1).match(/[a-zA-Z_]+/)?.[0]
   if (typeof tag === "undefined") {
     return { node: new InvalidSyntax(text, curr), index: curr }
   }
