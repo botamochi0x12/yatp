@@ -80,7 +80,7 @@ export const parseCharacterDeclaration = ({
     return { node: new InvalidSyntax(text, prev), index: curr + 1 }
   }
   const emotion = adjectives.length === 1 ? adjectives[0] : undefined
-  return { node: { type: "character-declaration", narrative, emotion, raw: lineOfInterest }, index: curr + 1 }
+  return { node: { type: "character-declaration", narrative, emotion, raw: lineOfInterest.slice(1) }, index: curr + 1 }
 }
 
 /**
@@ -91,7 +91,7 @@ export const parseCharacterDeclaration = ({
  * ---
  * @example
  * >> parseMonologue({text: "#\nHello, world!", index: 0})
- * >> // => { node: { type: "monologue", text: "Hello, world!" }, index: 13 }
+ * >> // => { node: { type: "monologue", raw: "Hello, world!" }, index: 13 }
  */
 export const parseMonologue = ({
   text,
@@ -112,7 +112,7 @@ export const parseMonologue = ({
  * ---
  * @example
  * >> parseLabel({text: "*label", index: 0})
- * >> // => { node: { type: "label", text: "*label" }, index: 6 }
+ * >> // => { node: { type: "label", raw: "*label" }, index: 6 }
  */
 export const parseLabel = ({
   text,
@@ -126,7 +126,9 @@ export const parseLabel = ({
   if (label === undefined) {
     return { node: new InvalidSyntax(text, index), index: index + lineOfInterest.length + 1 }
   }
-  return { node: { type: "label", label, raw: lineOfInterest }, index: index + lineOfInterest.length + 1 }
+  const extra = undefined
+  // TODO: Parse the extra label.
+  return { node: { type: "label", label, extra, raw: lineOfInterest.slice(1) }, index: index + lineOfInterest.length + 1 }
 }
 
 /**
@@ -167,7 +169,7 @@ export const parseSingleLineTag = ({
  * ---
  * @example
  * >> parseMultiLineTag({text: "[multi_line_tag]", index: 0})
- * >> // => { node: { type: "multi-line-tag", text: "[multi_line_tag]" }, index: 17 }
+ * >> // => { node: { type: "multi-line-tag", raw: "[multi_line_tag]" }, index: 17 }
  */
 export const parseMultiLineTag = ({
   text,
@@ -202,7 +204,7 @@ export const parseMultiLineTag = ({
  * ---
  * @example
  * >> parseLineComment({text: "; Line Comment", index: 0})
- * >> // => { node: { type: "line-comment", text: "; Line Comment" }, index: 14 }
+ * >> // => { node: { type: "line-comment", raw: "; Line Comment" }, index: 14 }
  */
 export const parseLineComment = ({
   text,
@@ -211,7 +213,7 @@ export const parseLineComment = ({
   const line = text.slice(prev).split(/\n/, 1)[0]
   if (!line.startsWith(";")) return { node: new FailingParsing(text, prev), index: prev }
   return {
-    node: { type: "line-comment", raw: line },
+    node: { type: "line-comment", raw: line.slice(1) },
     index: prev + line.length + 1
   }
 }
@@ -224,7 +226,7 @@ export const parseLineComment = ({
  * ---
  * @example
  * >> parseBlockComment({text: "\/* Block Comment *\/", index: 0})
- * >> // => { node: { type: "block-comment", text: "\/* Block Comment *\/" }, index: 19 }
+ * >> // => { node: { type: "block-comment", raw: "\/* Block Comment *\/" }, index: 19 }
  */
 export const parseBlockComment = ({
   text,
@@ -255,10 +257,10 @@ export const parseBlockComment = ({
  * ---
  * @example
  * >> parseBareText({text: "Hello, world!", index: 0})
- * >> // => { node: { type: "string", text: "Hello, world!" }, index: 13 }
+ * >> // => { node: { type: "string", raw: "Hello, world!" }, index: 13 }
  * @example
  * >> parseBareText({text: "_ Hello, world!", index: 0})
- * >> // => { node: { type: "string", text: " Hello, world!" }, index: 14 }
+ * >> // => { node: { type: "string", raw: " Hello, world!" }, index: 14 }
  */
 export const parseBareText = ({
   text,
@@ -287,7 +289,7 @@ export const parseBareText = ({
  * ---
  * @example
  * >> parseIdentifier({text: "Name", index: 0})
- * >> // => { node: { type: "identifier", text: "Name" }, index: 4 }
+ * >> // => { node: { type: "identifier", raw: "Name" }, index: 4 }
  */
 export const parseIdentifier = ({
   text,
@@ -310,7 +312,7 @@ export const parseIdentifier = ({
  * ---
  * @example
  * >> parseEmpty({text: "", index: 0});
- * >> // => { node: { type: "empty", text: ""}, index: 0 }
+ * >> // => { node: { type: "empty", raw: ""}, index: 0 }
  */
 export const parseEmpty = ({
   text,
