@@ -180,13 +180,11 @@ describe("Complex multi-line tags::", () => {
   it("should be valid for space-separated parts.", () => {
     const text = "[tag switch]"
     const parsedText = parseMultiLineTag({ text, index: 0 })
-    expect(parsedText).toBeTruthy()
     expect(parsedText).toMatchObject({ node: { type: "multi-line-tag", tag: "tag", parameters: { switch: true } } })
   })
   it("should be valid for a KV pair.", () => {
     const text = "[tag key=value]"
     const parsedText = parseMultiLineTag({ text, index: 0 })
-    expect(parsedText).toBeTruthy()
     expect(parsedText).toMatchObject({ node: { type: "multi-line-tag", tag: "tag", parameters: { key: "value" } } })
   })
 })
