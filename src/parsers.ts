@@ -190,10 +190,10 @@ export const parseMultiLineTag = ({
   if (lineOfInterest.slice(1, -1).replace(/\s/g, "").length === 0) {
     return { node: new InvalidSyntax(text, prev), index: curr }
   }
-  let node = undefined
-  let nextIndex = undefined
+  let node
+  let nextIndex
   for (let i = 1; i < lineOfInterest.length - 1; i++) {
-    ({node, index: nextIndex} = parseIdentifier({text: lineOfInterest, index: i}))
+    ({ node, index: nextIndex } = parseIdentifier({ text: lineOfInterest, index: i }))
     if (node.type === "identifier") {
       break
     }
@@ -247,7 +247,7 @@ export const parseBlockComment = ({
   if (!textOfInterest.startsWith("/*")) {
     return { node: new FailingParsing(text, index), index }
   }
-  const indexOfClosingBlock = textOfInterest.search(/\*\//);
+  const indexOfClosingBlock = textOfInterest.search(/\*\//)
   if (indexOfClosingBlock < 0) {
     return { node: new InvalidSyntax(text, index), index }
     // NOTE: The block comment should be closed.
@@ -307,7 +307,7 @@ export const parseIdentifier = ({
   index: prev
 }: ContextToParse): ContextToBeParsed => {
   const maybeIdentifiers = text.slice(prev).match(/^[a-zA-Z_][a-zA-Z0-9_]*/)
-  if (!maybeIdentifiers || maybeIdentifiers.length === 0) {
+  if ((maybeIdentifiers == null) || maybeIdentifiers.length === 0) {
     return { node: new InvalidSyntax(text, prev), index: prev }
   }
   const identifier = maybeIdentifiers[0]
