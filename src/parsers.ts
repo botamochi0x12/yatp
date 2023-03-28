@@ -17,13 +17,26 @@ export const parseScenario = ({
   index
 }: ContextToParse): ContextToBeParsed => {
   if (text.length === 0) return parseEmpty({ text, index })
-  let context: ContextToBeParsed
-  context = parseLineComment({ text, index })
-  if (context.node.type === "line-comment") return context
-  context = parseBlockComment({ text, index })
-  if (context.node.type === "block-comment") return context
-  context = parseMultiLineTag({ text, index })
-  if (context.node.type === "multi-line-tag") return context
+  const anyContext = ({ text, index }: ContextToParse): ContextToBeParsed => {
+    let context: ContextToBeParsed
+    context = parseLineComment({ text, index })
+    if (context.node.type === "line-comment") return context
+    context = parseBlockComment({ text, index })
+    if (context.node.type === "block-comment") return context
+    context = parseMultiLineTag({ text, index })
+    if (context.node.type === "multi-line-tag") return context
+    return parseScenarioLine({ text, index })
+  }
+  const contexts: ContextToBeParsed[] = []
+  for (
+    let context = anyContext({ text, index });
+    index < text.length;
+    index = context.index
+  ) {
+    contexts.push(context)
+  }
+  const root = u("scenario", { raw: text }, contexts as [])
+  if (root.children.length !== 0) return { node: root, index: text.length }
   return { node: new InvalidSyntax(text, text.length), index: text.length }
 }
 
