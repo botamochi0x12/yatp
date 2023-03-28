@@ -123,7 +123,7 @@ export const parseLabel = ({
   const lineOfInterest = text.slice(index).split(/\n/, 1)[0]
   // TODO: Check if the label is valid.
   if (!lineOfInterest.startsWith("*")) { return { node: new FailingParsing(text, index), index } }
-  if (lineOfInterest.length == ("*").length) { return { node: new InvalidSyntax(text, index), index: index + lineOfInterest.length + 1 } }
+  if (lineOfInterest.length === ("*").length) { return { node: new InvalidSyntax(text, index), index: index + lineOfInterest.length + 1 } }
   const label = lineOfInterest.slice(1).match(/^[a-zA-Z_]+/)?.[0]
   if (label === undefined) {
     return { node: new InvalidSyntax(text, index), index: index + lineOfInterest.length + 1 }
@@ -151,7 +151,7 @@ export const parseSingleLineTag = ({
   const lineOfInterest = text.slice(prev).split(/\n/, 1)[0]
   // TODO: Check if the components of the tag are valid.
   const curr = prev + lineOfInterest.length
-  if (curr - prev == ("@").length) {
+  if (curr - prev === ("@").length) {
     return { node: new InvalidSyntax(text, curr), index: curr }
   }
   const tag = lineOfInterest.slice(1).match(/^[a-zA-Z_]+/)?.[0]
