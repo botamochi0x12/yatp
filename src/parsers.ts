@@ -189,7 +189,15 @@ export const parseMultiLineTag = ({
   if (lineOfInterest.slice(1, -1).replace(/\s/g, "").length === 0) {
     return { node: new InvalidSyntax(text, prev), index: curr }
   }
-  const tag = lineOfInterest.slice(1, -1).match(/[a-zA-Z_]+/)?.[0]
+  let node = undefined
+  let nextIndex = undefined
+  for (let i = 1; i < lineOfInterest.length - 1; i++) {
+    ({node, index: nextIndex} = parseIdentifier({text: lineOfInterest, index: i}))
+    if (node.type === "identifier") {
+      break
+    }
+  }
+  const tag = node?.value
   if (typeof tag === "undefined") {
     return { node: new InvalidSyntax(text, curr), index: curr }
   }
@@ -297,7 +305,7 @@ export const parseIdentifier = ({
   text,
   index: prev
 }: ContextToParse): ContextToBeParsed => {
-  const maybeIdentifiers = text.slice(prev).match(/^[a-zA-Z_][a-zA-Z0-9_]*?$/)
+  const maybeIdentifiers = text.slice(prev).match(/^[a-zA-Z_][a-zA-Z0-9_]*/)
   if (!maybeIdentifiers || maybeIdentifiers.length === 0) {
     return { node: new InvalidSyntax(text, prev), index: prev }
   }
