@@ -1,5 +1,6 @@
 import { InvalidSyntax, FailingParsing } from "./conditions"
 import type { ContextToBeParsed, ContextToParse } from "./conditions"
+import { u } from "unist-builder/index.js"
 
 /**
  * Parse a scenario.
@@ -80,7 +81,7 @@ export const parseCharacterDeclaration = ({
     return { node: new InvalidSyntax(text, prev), index: curr + 1 }
   }
   const emotion = adjectives.length === 1 ? adjectives[0] : undefined
-  return { node: { type: "character-declaration", narrative, emotion, raw: lineOfInterest.slice(1) }, index: curr + 1 }
+  return { node: u("character-declaration", { narrative, emotion, raw: lineOfInterest.slice(1) }, narrative), index: curr + 1 }
 }
 
 /**
@@ -102,7 +103,7 @@ export const parseMonologue = ({
     return { node: new FailingParsing(text, index), index }
   }
   const nextIndex = index + lineOfInterest.length
-  return { node: { type: "monologue", raw: text.slice(index, nextIndex) }, index: nextIndex + 1 }
+  return { node: u("monologue", { raw: text.slice(index, nextIndex) }), index: nextIndex + 1 }
 }
 
 /**
@@ -129,7 +130,7 @@ export const parseLabel = ({
   }
   const extra = undefined
   // TODO: Parse the extra label.
-  return { node: { type: "label", label, extra, raw: lineOfInterest.slice(1) }, index: index + lineOfInterest.length + 1 }
+  return { node: u("label", { label, extra, raw: lineOfInterest.slice(1) }, label), index: index + lineOfInterest.length + 1 }
 }
 
 /**
@@ -159,7 +160,7 @@ export const parseSingleLineTag = ({
   }
   // TODO: Parse parameters.
   const parameters = {}
-  return { node: { type: "single-line-tag", raw: lineOfInterest.slice(1), tag, parameters }, index: curr + 1 }
+  return { node: u("single-line-tag", { raw: lineOfInterest.slice(1), tag, parameters }, tag), index: curr + 1 }
 }
 
 /**
@@ -203,7 +204,7 @@ export const parseMultiLineTag = ({
   }
   // TODO: Parse parameters.
   const parameters = {}
-  return { node: { type: "multi-line-tag", raw: textOfInterest.slice(1, -1).replace("\n", " "), tag, parameters }, index: curr }
+  return { node: u("multi-line-tag", { raw: textOfInterest.slice(1, -1).replace("\n", " "), tag, parameters }, tag), index: curr }
 }
 
 /**
@@ -223,7 +224,7 @@ export const parseLineComment = ({
   const line = text.slice(prev).split(/\n/, 1)[0]
   if (!line.startsWith(";")) return { node: new FailingParsing(text, prev), index: prev }
   return {
-    node: { type: "line-comment", raw: line.slice(1) },
+    node: u("line-comment", { raw: line.slice(1) }, line.slice(1)),
     index: prev + line.length + 1
   }
 }
@@ -256,7 +257,7 @@ export const parseBlockComment = ({
     return { node: new InvalidSyntax(text, index), index }
     // NOTE: The block comment should be in multiple lines.
   }
-  return { node: { type: "block-comment", raw: textMatched, value: textMatched.slice(("/*").length, -(("*/").length)) }, index: index + textMatched.length }
+  return { node: u("block-comment", { raw: textMatched }, textMatched.slice(("/*").length, -(("*/").length))), index: index + textMatched.length }
 }
 
 /**
@@ -311,7 +312,7 @@ export const parseIdentifier = ({
   }
   const identifier = maybeIdentifiers[0]
   const nextIndex = prev + identifier.length
-  return { node: { type: "identifier", raw: text.slice(prev, nextIndex), value: identifier }, index: nextIndex }
+  return { node: u("identifier", { raw: text.slice(prev, nextIndex) }, identifier), index: nextIndex }
 }
 
 /**
@@ -331,5 +332,5 @@ export const parseEmpty = ({
   if (index !== 0 || text.length !== 0) {
     return { node: new FailingParsing(text, index), index }
   }
-  return { node: { type: "empty", raw: "" }, index: 0 }
+  return { node: u("empty", { raw: "" }), index: 0 }
 }
