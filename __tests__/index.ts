@@ -1,5 +1,16 @@
 import "jest"
-import { parseLineComment, parseSingleLineTag, parseCharacterDeclaration, parseLabel, parseBlockComment, parseMultiLineTag, parseBareText, parseIdentifier, parseEmpty, parseMonologue } from './../src/parsers';
+import {
+  parseBareText,
+  parseBlockComment,
+  parseCharacterDeclaration,
+  parseEmpty,
+  parseIdentifier,
+  parseLabel,
+  parseLineComment,
+  parseMonologue,
+  parseMultiLineTag,
+  parseSingleLineTag,
+} from './../src/parsers';
 
 const EMPTY = { type: "empty", raw: "" }
 
@@ -145,12 +156,12 @@ describe("Complex single-line tags::", () => {
   it("should be valid for space-separated parts.", () => {
     const text = "@tag switch"
     const parsedText = parseSingleLineTag({ text, index: 0 })
-    expect(parsedText).toMatchObject({ node: { type: "single-line-tag", tag: "tag", parameters: ["switch"] } })
+    expect(parsedText).toMatchObject({ node: { type: "single-line-tag", tag: "tag", parameters: { switch: true } } })
   })
   it("should be valid for a KV pair.", () => {
     const text = "@tag key=value"
     const parsedText = parseSingleLineTag({ text, index: 0 })
-    expect(parsedText).toMatchObject({ node: { type: "single-line-tag", tag: "tag", parameters: ["key=value"] } })
+    expect(parsedText).toMatchObject({ node: { type: "single-line-tag", tag: "tag", parameters: { key: "value" } } })
   })
 })
 
@@ -171,13 +182,13 @@ describe("Complex multi-line tags::", () => {
     const text = "[tag switch]"
     const parsedText = parseMultiLineTag({ text, index: 0 })
     expect(parsedText).toBeTruthy()
-    expect(parsedText).toMatchObject({ node: { type: "multi-line-tag", tag: "tag", parameters: ["switch"] } })
+    expect(parsedText).toMatchObject({ node: { type: "multi-line-tag", tag: "tag", parameters: { switch: true } } })
   })
   it("should be valid for a KV pair.", () => {
     const text = "[tag key=value]"
     const parsedText = parseMultiLineTag({ text, index: 0 })
     expect(parsedText).toBeTruthy()
-    expect(parsedText).toMatchObject({ node: { type: "multi-line-tag", tag: "tag", parameters: ["key=value"] } })
+    expect(parsedText).toMatchObject({ node: { type: "multi-line-tag", tag: "tag", parameters: { key: "value" } } })
   })
 })
 
@@ -206,7 +217,7 @@ describe("Complex multi-line tags containing lines::", () => {
             switch
             ]`
     const parsedText = parseMultiLineTag({ text, index: 0 })
-    expect(parsedText).toMatchObject({ node: { type: "multi-line-tag", tag: "tag", parameters: ["switch"] } })
+    expect(parsedText).toMatchObject({ node: { type: "multi-line-tag", tag: "tag", parameters: { switch: true } } })
   })
   it("should be valid for a KV pair.", () => {
     const text = `[
@@ -214,7 +225,7 @@ describe("Complex multi-line tags containing lines::", () => {
             key=value
         ]`
     const parsedText = parseMultiLineTag({ text, index: 0 })
-    expect(parsedText).toMatchObject({ node: { type: "multi-line-tag", tag: "tag", parameters: ["key=value"] } })
+    expect(parsedText).toMatchObject({ node: { type: "multi-line-tag", tag: "tag", parameters: { key: "value" } } })
   })
   it("should be invalid for a multi-line KV pair.", () => {
     const text = `[

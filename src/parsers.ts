@@ -97,11 +97,12 @@ export const parseMonologue = ({
   text,
   index
 }: ContextToParse): ContextToBeParsed => {
-  if (text.slice(index, index + ("#\n").length) !== "#\n") {
+  const lineOfInterest = text.slice(index).split(/\n/, 1)[0]
+  if (lineOfInterest.trimEnd() !== "#") {
     return { node: new FailingParsing(text, index), index }
   }
-  const nextIndex = index + ("#\n").length
-  return { node: { type: "monologue", raw: text.slice(index, nextIndex) }, index: nextIndex }
+  const nextIndex = index + lineOfInterest.length
+  return { node: { type: "monologue", raw: text.slice(index, nextIndex) }, index: nextIndex + 1 }
 }
 
 /**
