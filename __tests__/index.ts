@@ -1,4 +1,4 @@
-import "jest"
+import { describe, it, expect } from "vitest"
 import {
   parseBareText,
   parseBlockComment,

@@ -11,14 +11,9 @@
   ],
   "private": true,
   "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "test:debug": "node --inspect-brk ./node_modules/.bin/jest --runInBand",
-    "test:debug:watch": "node --inspect-brk ./node_modules/.bin/jest --runInBand --watch",
-    "test:debug:coverage": "node --inspect-brk ./node_modules/.bin/jest --runInBand --coverage",
-    "test:debug:coverage:watch": "node --inspect-brk ./node_modules/.bin/jest --runInBand --coverage --watch",
-    "test:debug:coverage:watchAll": "node --inspect-brk ./node_modules/.bin/jest --runInBand --coverage --watchAll",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
     "lint": "eslint src",
     "lint:fix": "eslint --fix src",
     "lint:check": "eslint --print-config src | eslint-config-prettier-check",
@@ -52,6 +47,7 @@
     "@types/jest": "^29.4.0",
     "@typescript-eslint/eslint-plugin": "^5.50.0",
     "@typescript-eslint/parser": "^5.50.0",
+    "@vitest/coverage-c8": "^0.29.8",
     "eslint": "^8.32.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-config-standard-with-typescript": "^34.0.0",
@@ -63,7 +59,8 @@
     "prettier": "^2.8.3",
     "ts-jest": "^29.0.5",
     "typescript": "^4.9.4",
-    "typescript-eslint": "0.0.1-alpha.0"
+    "typescript-eslint": "0.0.1-alpha.0",
+    "vitest": "^0.29.8"
   },
   "##": "##COMMENT",
   "dependencies": {
