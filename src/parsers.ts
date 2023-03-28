@@ -16,7 +16,7 @@ export const parseScenario = ({
   text,
   index
 }: ContextToParse): ContextToBeParsed => {
-  if (text.length === 0) return { node: { type: "empty", raw: "" }, index }
+  if (text.length === 0) return parseEmpty({ text, index })
   let context: ContextToBeParsed
   context = parseLineComment({ text, index })
   if (context.node.type === "line-comment") return context
