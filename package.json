@@ -65,6 +65,7 @@
   },
   "##": "##COMMENT",
   "dependencies": {
+    "@types/unist": "^2.0.6",
     "unist-builder": "^3.0.1"
   }
 }

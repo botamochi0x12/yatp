@@ -2,6 +2,7 @@ lockfileVersion: 5.4
 
 specifiers:
   '@types/jest': ^29.4.0
+  '@types/unist': ^2.0.6
   '@typescript-eslint/eslint-plugin': ^5.50.0
   '@typescript-eslint/parser': ^5.50.0
   '@vitest/coverage-c8': ^0.29.8
@@ -22,6 +23,7 @@ specifiers:
   vitest: ^0.29.8
 
 dependencies:
+  '@types/unist': 2.0.6
   unist-builder: 3.0.1
 
 devDependencies:
