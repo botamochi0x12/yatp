@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest"
 import {
   parseBareText,
   parseBlockComment,
-  parseCharacterDeclaration,
+  parseNarratorDeclaration,
   parseEmpty,
   parseIdentifier,
   parseLabel,
@@ -68,9 +68,9 @@ describe("Simple single-lines::", () => {
     const text = "I'm a line of text."
     expect(parseBareText({ text, index: 0 })).toMatchObject({ node: { type: "bare-text" } })
   })
-  it("should be a valid character declaration.", () => {
-    const text = "#character-declaration"
-    expect(parseCharacterDeclaration({ text, index: 0 })).toMatchObject({ node: { type: "character-declaration" } })
+  it("should be a valid narrator declaration.", () => {
+    const text = "#narrator-declaration"
+    expect(parseNarratorDeclaration({ text, index: 0 })).toMatchObject({ node: { type: "narrator-declaration" } })
   })
   it("should be a valid label.", () => {
     const text = "*label"
@@ -86,27 +86,27 @@ describe("Simple single-lines::", () => {
   })
 })
 
-describe("Complex character declarations::", () => {
+describe("Complex narrator declarations::", () => {
   it("should be invalid for nobody with no emotion.", () => {
     const text = "#:"
-    expect(parseCharacterDeclaration({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseNarratorDeclaration({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
     // NOTE: This behavior is better than ignoring potential typographic errors,
     // NOTE: however it can be different from another implementation.
   })
   it("should be valid for an emotion declaration.", () => {
     const text = "#Jane:Angry"
-    const parsedText = parseCharacterDeclaration({ text, index: 0 })
-    expect(parsedText).toMatchObject({ node: { type: "character-declaration", narrative: "Jane", emotion: "Angry" } })
+    const parsedText = parseNarratorDeclaration({ text, index: 0 })
+    expect(parsedText).toMatchObject({ node: { type: "narrator-declaration", narrative: "Jane", emotion: "Angry" } })
   })
   it("should be invalid for a name with a trailing colon.", () => {
     const text = "#Jane:"
-    expect(parseCharacterDeclaration({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseNarratorDeclaration({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
     // NOTE: This behavior is better than ignoring potential typographic errors,
     // NOTE: however it can be different from another implementation.
   })
   it("should be invalid for an emotion declamation with a trailing colon.", () => {
     const text = "#Jane:Angry:"
-    expect(parseCharacterDeclaration({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+    expect(parseNarratorDeclaration({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
     // NOTE: This behavior is better than ignoring potential typographic errors,
     // NOTE: however it can be different from another implementation.
   })

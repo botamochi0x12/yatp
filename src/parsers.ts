@@ -59,24 +59,24 @@ export const parseScenarioLine = ({
   if (context.node.type === "label") return context
   context = parseNarrative({ text, index })
   if (context.node.type === "narrative") return context
-  context = parseCharacterDeclaration({ text, index })
-  if (context.node.type === "character-declaration") return context
+  context = parseNarratorDeclaration({ text, index })
+  if (context.node.type === "narrator-declaration") return context
   context = parseSingleLineTag({ text, index })
   if (context.node.type === "single-line-tag") return context
   return { node: new InvalidSyntax(text, text.length), index: text.length }
 }
 
 /**
- * Parse a character declaration.
+ * Parse a narrator declaration.
  * @param text The text to parse.
  * @param index The index to start parsing from.
  * @returns The parsed node and the index ti continue parsing from.
  * ---
  * @example
- * >> parseCharacterDeclaration({text: "#Name", index: 0})
- * >> // => { node: { type: "character-declaration", text: "#Name" }, index: 5 }
+ * >> parseNarratorDeclaration({text: "#Name", index: 0})
+ * >> // => { node: { type: "narrator-declaration", text: "#Name" }, index: 5 }
  */
-export const parseCharacterDeclaration = ({
+export const parseNarratorDeclaration = ({
   text,
   index: prev
 }: ContextToParse): ContextToBeParsed => {
@@ -94,7 +94,7 @@ export const parseCharacterDeclaration = ({
     return { node: new InvalidSyntax(text, prev), index: curr + 1 }
   }
   const emotion = adjectives.length === 1 ? adjectives[0] : undefined
-  return { node: u("character-declaration", { narrative, emotion, raw: lineOfInterest.slice(1) }, narrative), index: curr + 1 }
+  return { node: u("narrator-declaration", { narrative, emotion, raw: lineOfInterest.slice(1) }, narrative), index: curr + 1 }
 }
 
 /**

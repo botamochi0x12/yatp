@@ -2,7 +2,7 @@ export class InvalidSyntaxError extends Error { }
 
 export class InvalidLabelError extends InvalidSyntaxError { }
 
-export class InvalidCharacterDeclarationError extends InvalidSyntaxError { }
+export class InvalidNarratorDeclarationError extends InvalidSyntaxError { }
 
 export class InvalidNarrativeError extends InvalidSyntaxError { }
 
