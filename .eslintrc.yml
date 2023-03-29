@@ -2,7 +2,9 @@
 env:
   node: true
   es2021: true
-extends: standard-with-typescript
+extends:
+  - standard-with-typescript
+  - prettier
 overrides: []
 plugins:
   - "@typescript-eslint"
@@ -14,3 +16,5 @@ rules:
   "@typescript-eslint/quotes":
     - warn
     - double
+  "space-before-function-paren":
+    - error
