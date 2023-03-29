@@ -57,8 +57,8 @@ export const parseScenarioLine = ({
   let context: ContextToBeParsed
   context = parseLabel({ text, index })
   if (context.node.type === "label") return context
-  context = parseMonologue({ text, index })
-  if (context.node.type === "monologue") return context
+  context = parseNarrative({ text, index })
+  if (context.node.type === "narrative") return context
   context = parseCharacterDeclaration({ text, index })
   if (context.node.type === "character-declaration") return context
   context = parseSingleLineTag({ text, index })
@@ -98,16 +98,16 @@ export const parseCharacterDeclaration = ({
 }
 
 /**
- * Parse a monologue.
+ * Parse a narrative.
  * @param text The text to be parsed.
  * @param index The index to start parsing from.
  * @returns The parsed node and the index to continue parsing from.
  * ---
  * @example
- * >> parseMonologue({text: "#\nHello, world!", index: 0})
- * >> // => { node: { type: "monologue", raw: "Hello, world!" }, index: 13 }
+ * >> parseNarrative({text: "#\nHello, world!", index: 0})
+ * >> // => { node: { type: "narrative", raw: "Hello, world!" }, index: 13 }
  */
-export const parseMonologue = ({
+export const parseNarrative = ({
   text,
   index
 }: ContextToParse): ContextToBeParsed => {
@@ -116,7 +116,7 @@ export const parseMonologue = ({
     return { node: new FailingParsing(text, index), index }
   }
   const nextIndex = index + lineOfInterest.length
-  return { node: u("monologue", { raw: text.slice(index, nextIndex) }), index: nextIndex + 1 }
+  return { node: u("narrative", { raw: text.slice(index, nextIndex) }), index: nextIndex + 1 }
 }
 
 /**

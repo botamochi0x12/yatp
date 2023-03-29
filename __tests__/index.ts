@@ -7,7 +7,7 @@ import {
   parseIdentifier,
   parseLabel,
   parseLineComment,
-  parseMonologue,
+  parseNarrative,
   parseMultiLineTag,
   parseQuotedString,
   parseSingleLineTag
@@ -26,9 +26,9 @@ describe("Minimal special symbols::", () => {
     // NOTE: Every closing block-comment pair (leading `*` and following `/`) needs to place alone inline.
     expect(parseBlockComment({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
   })
-  it("should be a monologue.", () => {
+  it("should be a narrative.", () => {
     const text = "#"
-    expect(parseMonologue({ text, index: 0 })).toMatchObject({ node: { type: "monologue" } })
+    expect(parseNarrative({ text, index: 0 })).toMatchObject({ node: { type: "narrative" } })
   })
   it("should throw an error with the empty label.", () => {
     const text = "*"
