@@ -1,4 +1,3 @@
-
 # yaml-language-server: $schema=https://github.com/SchemaStore/schemastore/raw/master/src/schemas/json/eslintrc.json
 env:
   node: true
@@ -13,5 +12,5 @@ parserOptions:
   project: ./tsconfig.json
 rules:
   "@typescript-eslint/quotes":
-  - warn
-  - double
+    - warn
+    - double
