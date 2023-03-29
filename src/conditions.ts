@@ -1,5 +1,6 @@
+import type { Node as _Node } from "unist"
 
-export class InvalidSyntax {
+export class InvalidSyntax implements _Node {
   type = "invalid-syntax"
   raw: string
   constructor (text: string, index: number) {
@@ -7,7 +8,7 @@ export class InvalidSyntax {
   }
 }
 
-export class FailingParsing {
+export class FailingParsing implements _Node {
   type = "failing-parsing"
   raw: string
   constructor (text: string, index: number) {
@@ -15,7 +16,7 @@ export class FailingParsing {
   }
 }
 
-export interface Node { type: string, raw: string, [index: string]: any }
+export interface Node extends _Node { type: string, raw: string, [index: string]: any }
 
 export interface ContextToParse { text: string, index: number }
 
