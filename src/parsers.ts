@@ -347,3 +347,59 @@ export const parseEmpty = ({
   }
   return { node: u("empty", { raw: "" }), index: 0 }
 }
+
+/**
+ * Parse a quoted string.
+ * @param text The string to parse
+ * @param index The index to start parsing from.
+ * @return The parsed node and the index to continue parsing from.
+ * ---
+ * @example
+ * ```
+ * >>> parseQuotedString({text: `"quoted-string"`, index: 0})
+ * >>> // => { node: { type: "quoted-string" }, index: 13 }
+ * ```
+ */
+export const parseQuotedString = ({
+  text,
+  index: curr
+}: ContextToParse): ContextToBeParsed => {
+  const eatQuoteHeader = (
+    text: string, index: number, markRegExp: RegExp = /^["']{1}/
+  ): [null | string, number] => {
+    const mark = text[index]
+    return mark.search(markRegExp) >= 0 ? [mark, index + mark.length] : [null, index]
+  }
+  const eatQuoteBody = (
+    text: string, index: number, mark: string
+  ): [null | string, number] => {
+    const offsetToEndQuote = text.slice(index).indexOf(mark)
+    if (offsetToEndQuote < 0) {
+      return [null, index]
+    }
+    return [text.slice(index, index + offsetToEndQuote), index + (offsetToEndQuote + 1)]
+    // TODO: Treat escaped characters.
+  }
+  const eatQuoteFooter = (
+    text: string, index: number, mark: string
+  ): [string, number] => {
+    return [mark, index + mark.length]
+  }
+  const [mark, indexToStartQuoting] = eatQuoteHeader(text, curr)
+  if (mark === null) {
+    return { node: new FailingParsing(text, curr), index: curr }
+  }
+  const [body, indexToEndQuoteBody] = eatQuoteBody(text, indexToStartQuoting, mark)
+  if (body === null) {
+    return { node: new FailingParsing(text, curr), index: curr }
+  }
+  if (body === "") {
+    return { node: u("quoted-string", { raw: `${mark}${mark}` }, [u("undefined")]), index: indexToStartQuoting }
+  }
+  const [markOfFooter, indexToEndQuoting] = eatQuoteFooter(text, indexToEndQuoteBody, mark)
+  // NOTE: Should raise a runtime error if `mark` and `markOfFooter` would be not the same.
+  return {
+    node: u("quoted-string", { raw: `${mark}${body}${markOfFooter}` }, body),
+    index: curr + (indexToEndQuoting - indexToStartQuoting)
+  }
+}

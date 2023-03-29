@@ -9,6 +9,7 @@ import {
   parseLineComment,
   parseMonologue,
   parseMultiLineTag,
+  parseQuotedString,
   parseSingleLineTag
 } from "./../src/parsers"
 
@@ -294,5 +295,28 @@ describe("Identifiers::", () => {
     const text = "identifier-identifier"
     expect(parseIdentifier({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
     // NOTE: This is an invalid identifier in JavaScript.
+  })
+})
+
+describe("Quoted Strings::", () => {
+  it("should be valid with a line of single-quoted string.", () => {
+    const text = "'string-surrounded-by-single-quotations'"
+    expect(parseQuotedString({ text, index: 0 })).toMatchObject({ node: { type: "quoted-string" } })
+  })
+  it("should be valid with a line of double-quoted string.", () => {
+    const text = '"string-surrounded-by-double-quotations"'
+    expect(parseQuotedString({ text, index: 0 })).toMatchObject({ node: { type: "quoted-string" } })
+  })
+  it("should be invalid with backtick quotations.", () => {
+    const text = "`backtick-quoted region is invalid`"
+    expect(parseQuotedString({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+  })
+  it.todo("should not contain any bare single quotes inside single quotations.", () => {
+    const text = "'''"
+    expect(parseQuotedString({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
+  })
+  it.todo("should not contain any bare single quotes inside single quotations.", () => {
+    const text = '"""'
+    expect(parseQuotedString({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
   })
 })
