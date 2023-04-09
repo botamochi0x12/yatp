@@ -13,8 +13,11 @@ parserOptions:
   sourceType: module
   project: ./tsconfig.json
 rules:
+  quotes:
+    - off
   "@typescript-eslint/quotes":
     - warn
     - double
+    - avoidEscape: true
   "space-before-function-paren":
     - error
