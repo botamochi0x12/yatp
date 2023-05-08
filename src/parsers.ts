@@ -9,8 +9,8 @@ import { u } from "unist-builder/index.js"
  * @returns The parsed node and the index to continue parsing from.
  * ---
  * @example
- * >> parseScenario({text: "Hello, world!", index: 0})
- * >> // => { node: { type: "bare-text", text: "Hello, world!" }, index: 13 }
+ * >>> parseScenario({text: "Hello, world!", index: 0})
+ * { node: { type: "bare-text", text: "Hello, world!" }, index: 13 }
  */
 export const parseScenario = ({
   text,
@@ -47,8 +47,8 @@ export const parseScenario = ({
  * @returns The parsed node and the index to continue parsing from.
  * ---
  * @example
- * >> parseScenarioLine({text: "Hello, world!", index: 0})
- * >> // => { node: { type: "bare-text", text: "Hello, world!" }, index: 13 }
+ * >>> parseScenarioLine({text: "Hello, world!", index: 0})
+ * { node: { type: "bare-text", text: "Hello, world!" }, index: 13 }
  */
 export const parseScenarioLine = ({
   text,
@@ -73,8 +73,8 @@ export const parseScenarioLine = ({
  * @returns The parsed node and the index ti continue parsing from.
  * ---
  * @example
- * >> parseNarratorDeclaration({text: "#Name", index: 0})
- * >> // => { node: { type: "narrator-declaration", text: "#Name" }, index: 5 }
+ * >>> parseNarratorDeclaration({text: "#Name", index: 0})
+ * { node: { type: "narrator-declaration", text: "#Name" }, index: 5 }
  */
 export const parseNarratorDeclaration = ({
   text,
@@ -104,8 +104,8 @@ export const parseNarratorDeclaration = ({
  * @returns The parsed node and the index to continue parsing from.
  * ---
  * @example
- * >> parseNarrative({text: "#\nHello, world!", index: 0})
- * >> // => { node: { type: "narrative", raw: "Hello, world!" }, index: 13 }
+ * >>> parseNarrative({text: "#\nHello, world!", index: 0})
+ * { node: { type: "narrative", raw: "Hello, world!" }, index: 13 }
  */
 export const parseNarrative = ({
   text,
@@ -126,8 +126,8 @@ export const parseNarrative = ({
  * @returns The parsed node and the index to continue parsing from.
  * ---
  * @example
- * >> parseLabel({text: "*label", index: 0})
- * >> // => { node: { type: "label", raw: "*label" }, index: 6 }
+ * >>> parseLabel({text: "*label", index: 0})
+ * { node: { type: "label", raw: "*label" }, index: 6 }
  */
 export const parseLabel = ({
   text,
@@ -153,8 +153,8 @@ export const parseLabel = ({
  * @returns The parsed node and the index to continue parsing from.
  * ---
  * @example
- * >> parseOneLinerTag({text: "@single_line_tag", index: 0})
- * >> // => { node: { type: "single-line-tag", text: "@single_line_tag" }, index: 14 }
+ * >>> parseOneLinerTag({text: "@single_line_tag", index: 0})
+ * { node: { type: "single-line-tag", text: "@single_line_tag" }, index: 14 }
  */
 export const parseSingleLineTag = ({
   text,
@@ -183,8 +183,8 @@ export const parseSingleLineTag = ({
  * @returns The parsed node and the index to continue parsing from.
  * ---
  * @example
- * >> parseMultiLineTag({text: "[multi_line_tag]", index: 0})
- * >> // => { node: { type: "multi-line-tag", raw: "[multi_line_tag]" }, index: 17 }
+ * >>> parseMultiLineTag({text: "[multi_line_tag]", index: 0})
+ * { node: { type: "multi-line-tag", raw: "[multi_line_tag]" }, index: 17 }
  */
 export const parseMultiLineTag = ({
   text,
@@ -204,8 +204,8 @@ export const parseMultiLineTag = ({
     return { node: new InvalidSyntax(text, prev), index: curr }
   }
   let node
-  let nextIndex
-  for (let i = 1; i < lineOfInterest.length - 1; i++) {
+  let nextIndex = lineOfInterest.search(/[^ \t　]/)
+  for (let i = nextIndex; i < lineOfInterest.length - 1; i++) {
     ({ node, index: nextIndex } = parseIdentifier({ text: lineOfInterest, index: i }))
     if (node.type === "identifier") {
       break
@@ -215,10 +215,55 @@ export const parseMultiLineTag = ({
   if (typeof tag === "undefined") {
     return { node: new InvalidSyntax(text, curr), index: curr }
   }
-  // TODO: Parse parameters.
-  const parameters = {}
-  return { node: u("multi-line-tag", { raw: textOfInterest.slice(1, -1).replace("\n", " "), tag, parameters }, tag), index: curr }
+  const parameters = {node: u("parameters", parseParameters())}
+  return { node: u("multi-line-tag", { raw: textOfInterest.slice(1, -1).replace("\n", " "), tag, parameters }, tag), index: nextIndex }
 }
+
+/**
+ * Parse a key-value pair.
+ * ---
+ * @example
+ * >>> parseKVPair({text: "text='string'", index: 0})
+ * { node: { type: "key-value-pair", key: "text", value: "string" }, index: 13 }
+ * >>> parseKVPair({text: "text=string", index: 0})
+ * { node: { type: "key-value-pair", key: "text", value: "string" }, index: 13 }
+ * >>> parseKVPair({text: "zero=0", index: 0})
+ * { node: { type: "key-value-pair", key: "zero", value: "0" }, index: 6 }
+ * >>> parseKVPair({text: "truthy=true", index: 0})
+ * { node: { type: "key-value-pair", key: "truthy", value: "true" }, index: 10 }
+ * >>> parseKVPair({text: "expr="1 + 2"", index: 0})
+ * { node: { type: "key-value-pair", key: "expr", value: "1 + 2" }, index: 12 }
+ */
+export const parseKVPair = ({text, index}: ContextToParse): ContextToBeParsed => {
+  const indexOfEqualSign = text.search(/=/)
+  if (indexOfEqualSign < 0) {
+    return { node: new FailingParsing(text, index), index }
+  }
+  const key = text.slice(0, indexOfEqualSign)
+  const textAfterEqualSign = text.slice(indexOfEqualSign + 1)
+  // NOTE: `value` can be quoted-expr or string literal or integer literal or boolean literal.
+  const [valueBare, nextIndexAfterKV] = (() => {
+    const indexOfQuote = textAfterEqualSign.search(/"/) // TODO
+    if (indexOfQuote < 0) {
+      const nextIndex = textAfterEqualSign.search(/ /)
+      return [textAfterEqualSign.slice(indexOfEqualSign + 1, nextIndex), nextIndex]
+    }
+    const indexOfQuoteEnd = textAfterEqualSign.slice(indexOfQuote + 1).search(/"/) // TODO
+    if (indexOfQuoteEnd < 0 || textAfterEqualSign.at(indexOfQuoteEnd + 1) !== " ") {
+      return new FailingParsing(textAfterEqualSign, indexOfQuote)
+    }
+    return [textAfterEqualSign.slice(indexOfQuote + 1, indexOfQuoteEnd - 1), indexOfQuoteEnd + 1]
+  })()
+  const valueQuoted = `"${valueBare}"`
+  return { node: u("key-value-pair", { raw: "", key, value: valueQuoted }), index: nextIndexAfterKV }
+}
+
+/**
+ * Parse a left hand value.
+ * ---
+ * @example
+ * >>> parseLeftHandValue({text: "0", index: 0})
+ */
 
 /**
  * Parse a line comment.
@@ -227,8 +272,8 @@ export const parseMultiLineTag = ({
  * @returns The parsed node and the index to continue parsing from.
  * ---
  * @example
- * >> parseLineComment({text: "; Line Comment", index: 0})
- * >> // => { node: { type: "line-comment", raw: "; Line Comment" }, index: 14 }
+ * >>> parseLineComment({text: "; Line Comment", index: 0})
+ * { node: { type: "line-comment", raw: "; Line Comment" }, index: 14 }
  */
 export const parseLineComment = ({
   text,
@@ -249,8 +294,8 @@ export const parseLineComment = ({
  * @returns The parsed node and the index to continue parsing from.
  * ---
  * @example
- * >> parseBlockComment({text: "\/* Block Comment *\/", index: 0})
- * >> // => { node: { type: "block-comment", raw: "\/* Block Comment *\/" }, index: 19 }
+ * >>> parseBlockComment({text: "\/* Block Comment *\/", index: 0})
+ * { node: { type: "block-comment", raw: "\/* Block Comment *\/" }, index: 19 }
  */
 export const parseBlockComment = ({
   text,
@@ -280,11 +325,11 @@ export const parseBlockComment = ({
  * @returns The parsed node and the index to continue parsing from.
  * ---
  * @example
- * >> parseBareText({text: "Hello, world!", index: 0})
- * >> // => { node: { type: "string", raw: "Hello, world!" }, index: 13 }
+ * >>> parseBareText({text: "Hello, world!", index: 0})
+ * { node: { type: "string", raw: "Hello, world!" }, index: 13 }
  * @example
- * >> parseBareText({text: "_ Hello, world!", index: 0})
- * >> // => { node: { type: "string", raw: " Hello, world!" }, index: 14 }
+ * >>> parseBareText({text: "_ Hello, world!", index: 0})
+ * { node: { type: "string", raw: " Hello, world!" }, index: 14 }
  */
 export const parseBareText = ({
   text,
@@ -312,8 +357,8 @@ export const parseBareText = ({
  * @returns The parsed node and the index to continue parsing from.
  * ---
  * @example
- * >> parseIdentifier({text: "Name", index: 0})
- * >> // => { node: { type: "identifier", raw: "Name" }, index: 4 }
+ * >>> parseIdentifier({text: "Name", index: 0})
+ * { node: { type: "identifier", raw: "Name" }, index: 4 }
  */
 export const parseIdentifier = ({
   text,
@@ -335,8 +380,8 @@ export const parseIdentifier = ({
  * @return The EMPTY node and the index 0.
  * ---
  * @example
- * >> parseEmpty({text: "", index: 0});
- * >> // => { node: { type: "empty", raw: ""}, index: 0 }
+ * >>> parseEmpty({text: "", index: 0});
+ * { node: { type: "empty", raw: ""}, index: 0 }
  */
 export const parseEmpty = ({
   text,
@@ -357,7 +402,7 @@ export const parseEmpty = ({
  * @example
  * ```
  * >>> parseQuotedString({text: `"quoted-string"`, index: 0})
- * >>> // => { node: { type: "quoted-string" }, index: 13 }
+ * { node: { type: "quoted-string" }, index: 13 }
  * ```
  */
 export const parseQuotedString = ({
