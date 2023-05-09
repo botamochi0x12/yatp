@@ -204,7 +204,7 @@ export const parseMultiLineTag = ({
     return { node: new InvalidSyntax(text, prev), index: curr }
   }
   let node
-  let nextIndex = lineOfInterest.search(/[^ \t　]/)
+  let nextIndex = lineOfInterest.search(/[^\s]/)
   for (let i = nextIndex; i < lineOfInterest.length - 1; i++) {
     ({ node, index: nextIndex } = parseIdentifier({ text: lineOfInterest, index: i }))
     if (node.type === "identifier") {
@@ -215,8 +215,41 @@ export const parseMultiLineTag = ({
   if (typeof tag === "undefined") {
     return { node: new InvalidSyntax(text, curr), index: curr }
   }
-  const parameters = {node: u("parameters", parseParameters())}
-  return { node: u("multi-line-tag", { raw: textOfInterest.slice(1, -1).replace("\n", " "), tag, parameters }, tag), index: nextIndex }
+  const parameters = parseParameters({text: lineOfInterest.slice(nextIndex), index: nextIndex })
+  return {
+    node: u(
+      "multi-line-tag",
+      {
+        raw: textOfInterest.slice(1, -1).replace("\n", " "),
+        tag,
+        parameters
+      },
+      tag
+    ),
+    index: nextIndex }
+}
+
+/**
+ * Parse parameters.
+ * @param text The text to be parsed.
+ * @param index The index to start parsing from.
+ */
+export const parseParameters = ({
+  text,
+  index: prev
+}: ContextToParse): ContextToBeParsed => {
+  const lineOfInterest = text.split(/\n/, 1)[0]
+  const curr = prev + lineOfInterest.length
+  const parameters: any[] = []
+  let nextIndex = lineOfInterest.search(/[^\s]/)
+  while (nextIndex < lineOfInterest.length) {
+    const { node, index } = parseKVPair({ text: lineOfInterest, index: nextIndex })
+    if (node.type === "key-value-pair") {
+      parameters.concat({[node.key]: node.value})
+    }
+    nextIndex = index
+  }
+  return { node: u("parameters", { raw: lineOfInterest}, parameters), index: curr }
 }
 
 /**
@@ -241,29 +274,35 @@ export const parseKVPair = ({text, index}: ContextToParse): ContextToBeParsed =>
   }
   const key = text.slice(0, indexOfEqualSign)
   const textAfterEqualSign = text.slice(indexOfEqualSign + 1)
-  // NOTE: `value` can be quoted-expr or string literal or integer literal or boolean literal.
-  const [valueBare, nextIndexAfterKV] = (() => {
-    const indexOfQuote = textAfterEqualSign.search(/"/) // TODO
-    if (indexOfQuote < 0) {
-      const nextIndex = textAfterEqualSign.search(/ /)
-      return [textAfterEqualSign.slice(indexOfEqualSign + 1, nextIndex), nextIndex]
-    }
-    const indexOfQuoteEnd = textAfterEqualSign.slice(indexOfQuote + 1).search(/"/) // TODO
-    if (indexOfQuoteEnd < 0 || textAfterEqualSign.at(indexOfQuoteEnd + 1) !== " ") {
-      return new FailingParsing(textAfterEqualSign, indexOfQuote)
-    }
-    return [textAfterEqualSign.slice(indexOfQuote + 1, indexOfQuoteEnd - 1), indexOfQuoteEnd + 1]
-  })()
-  const valueQuoted = `"${valueBare}"`
-  return { node: u("key-value-pair", { raw: "", key, value: valueQuoted }), index: nextIndexAfterKV }
+  const { node, index: nextIndexAfterKVPair } = parseLeftHandValue({text: textAfterEqualSign, index: index + indexOfEqualSign + 1})
+  return { node: u("key-value-pair", { raw: text, key, value: node.value }, [node]), index: nextIndexAfterKVPair + 1 }
 }
 
 /**
  * Parse a left hand value.
- * ---
- * @example
- * >>> parseLeftHandValue({text: "0", index: 0})
  */
+export const parseLeftHandValue = ({text, index}: ContextToParse): ContextToBeParsed => {
+  // NOTE: `value` can be quoted-expr or string literal or integer literal or boolean literal.
+  const nodeOrFailingParsing = (() => {
+    const indexOfQuote = text.slice(index).search(/"/) // TODO
+    if (indexOfQuote < 0) {
+      const nextIndex = text.slice(index).search(/ /)
+      return [text.slice(nextIndex), nextIndex]
+    }
+    const indexOfQuoteEnd = text.slice(index).slice(indexOfQuote + 1).search(/"/) // TODO
+    if (indexOfQuoteEnd < 0 || text.slice(index).at(indexOfQuoteEnd + 1) !== " ") {
+      return [new FailingParsing(text.slice(index), index), index]
+    }
+    return [text.slice(index).slice(indexOfQuote + 1, indexOfQuoteEnd - 1), indexOfQuoteEnd + 1]
+  })()
+  if (nodeOrFailingParsing[0] instanceof FailingParsing) {
+    return {node: nodeOrFailingParsing[0], index: nodeOrFailingParsing[1] as number}
+  }
+  const valueBare = nodeOrFailingParsing[0]
+  const nextIndexAfterLeftHandValue = nodeOrFailingParsing[1]
+  const valueQuoted = `"${valueBare}"`
+  return { node: u("key-value-pair", { raw: "", value: valueQuoted }, valueQuoted), index: nextIndexAfterLeftHandValue as number }
+}
 
 /**
  * Parse a line comment.
