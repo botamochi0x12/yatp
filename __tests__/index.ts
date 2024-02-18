@@ -311,11 +311,11 @@ describe("Quoted Strings::", () => {
     const text = "`backtick-quoted region is invalid`"
     expect(parseQuotedString({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
   })
-  it.todo("should not contain any bare single quotes inside single quotations.", () => {
+  it.todo("should not contain any bare single quotes inside double quotations.", () => {
     const text = "'''"
     expect(parseQuotedString({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
   })
-  it.todo("should not contain any bare single quotes inside single quotations.", () => {
+  it.todo("should not contain any bare double quotes inside single quotations.", () => {
     const text = '"""'
     expect(parseQuotedString({ text, index: 0 })).toMatchObject({ node: { type: "invalid-syntax" } })
   })
