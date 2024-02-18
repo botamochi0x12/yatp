@@ -127,7 +127,9 @@ export const parseNarrative = ({
  * ---
  * @example
  * >>> parseLabel({text: "*label", index: 0})
- * { node: { type: "label", raw: "*label" }, index: 6 }
+ * { node: { type: "label", raw: "*label", label: "label" }, index: 6 }
+ * >>> parseLabel({text: "*label|extra", index: 0})
+ * { node: { type: "label", raw: "*label", lable: "label", extra: "extra" }, index: 6 }
  */
 export const parseLabel = ({
   text,
@@ -141,8 +143,22 @@ export const parseLabel = ({
   if (label === undefined) {
     return { node: new InvalidSyntax(text, index), index: index + lineOfInterest.length + 1 }
   }
-  const extra = undefined
-  // TODO: Parse the extra label.
+  const extra = (({
+    text,
+    index
+  }: ContextToParse): string | undefined | InvalidSyntax => {
+    const textOfInterest = text.slice(index)
+    if (textOfInterest.length == 0) {
+      return undefined  // No need to parse more
+    }
+    if (!textOfInterest.startsWith("|")) {
+      return new InvalidSyntax(text, index+1)
+    }
+    return textOfInterest.slice(1).match(/^[a-zA-Z_]+/)?.[0]
+  })({text: lineOfInterest, index: 1 + label.length})
+  if (extra instanceof InvalidSyntax) {
+    return { node: extra, index: index + lineOfInterest.length + 1 }
+  }
   return { node: u("label", { label, extra, raw: lineOfInterest.slice(1) }, label), index: index + lineOfInterest.length + 1 }
 }
 
