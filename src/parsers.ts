@@ -187,8 +187,7 @@ export const parseSingleLineTag = ({
   if (typeof tag === "undefined") {
     return { node: new InvalidSyntax(text, curr), index: curr }
   }
-  // TODO: Parse parameters.
-  const parameters = {}
+  const parameters = parseParameters({text: "", index: -1})
   return { node: u("single-line-tag", { raw: lineOfInterest.slice(1), tag, parameters }, tag), index: curr + 1 }
 }
 
@@ -231,12 +230,17 @@ export const parseMultiLineTag = ({
   if (typeof tag === "undefined") {
     return { node: new InvalidSyntax(text, curr), index: curr }
   }
-  const parameters = {node: u("parameters", parseParameters())}
+  const parameters = parseParameters({text, index: curr})
   return { node: u("multi-line-tag", { raw: textOfInterest.slice(1, -1).replace("\n", " "), tag, parameters }, tag), index: nextIndex }
 }
 
 /** */
-const parseParameters = () => { return {key: "value"} }
+const parseParameters = ({
+  text,
+  index
+}: ContextToParse): ContextToBeParsed => {
+  return {node: u("parameters", {key: "value", raw: ""}), index: -1}
+}
 
 /**
  * Parse a key-value pair.
