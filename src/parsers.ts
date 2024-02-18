@@ -219,6 +219,9 @@ export const parseMultiLineTag = ({
   return { node: u("multi-line-tag", { raw: textOfInterest.slice(1, -1).replace("\n", " "), tag, parameters }, tag), index: nextIndex }
 }
 
+/** */
+const parseParameters = () => { return {key: "value"} }
+
 /**
  * Parse a key-value pair.
  * ---
