@@ -227,7 +227,7 @@ export const parseMultiLineTag = ({
       break
     }
   }
-  const tag = node?.value
+  const tag = node?.value as string
   if (typeof tag === "undefined") {
     return { node: new InvalidSyntax(text, curr), index: curr }
   }
